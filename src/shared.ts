@@ -17,12 +17,23 @@ export interface Course {
   meetings: Meeting[];
 }
 
-export interface SyncRequest {
+export interface CalendarLookupRequest {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
+}
+
+export interface SyncRequest extends CalendarLookupRequest {
   term: string;
   title?: string;
   excludedDates?: string[];
+}
+
+export interface CalendarSemester {
+  term: string;
+  updatedAt: string;
+  courses: Course[];
+  excludedDates: string[];
+  warnings: string[];
 }
 
 export interface CalendarSnapshot {
@@ -36,11 +47,17 @@ export interface CalendarSnapshot {
   excludedDates: string[];
   warnings: string[];
   feedUrl: string;
+  semesters: CalendarSemester[];
 }
 
 export interface SyncResponse extends CalendarSnapshot {
   /** Returned only at creation; unrelated to Columbia tokens. */
   managementToken?: string;
+  refreshed: boolean;
+}
+
+export interface LookupResponse {
+  calendars: CalendarSnapshot[];
   refreshed: boolean;
 }
 

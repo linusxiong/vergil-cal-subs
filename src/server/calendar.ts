@@ -1,4 +1,4 @@
-import type { Course, Meeting } from '../shared';
+import type { CalendarSemester, Course, Meeting } from '../shared';
 
 const DAY = 86_400_000;
 const WEEKDAYS: Record<string, number> = { Su: 0, Mo: 1, Tu: 2, We: 3, Th: 4, Fr: 5, Sa: 6 };
@@ -242,4 +242,19 @@ export function generateCalendar(input: {
   }
   lines.push('END:VCALENDAR');
   return { ics: lines.map(fold).join('\r\n') + '\r\n', eventCount };
+}
+
+export function generateSemesterCalendar(calendarId: string, title: string, semesters: CalendarSemester[]) {
+  if (!semesters.length || new Set(semesters.map(semester => semester.term)).size !== semesters.length || semesters.reduce((count, semester) => count + semester.courses.length, 0) > 500) invalid();
+  const calendars = semesters.map(semester => generateCalendar({ calendarId, title, ...semester }));
+  // These documents are generated above, never parsed from an uploaded ICS.
+  const header = calendars[0]!.ics.split(/(?<=\r\n)(?:BEGIN:VEVENT|END:VCALENDAR)\r\n/)[0]!;
+  const events = calendars.map(calendar => {
+    const start = calendar.ics.indexOf('\r\nBEGIN:VEVENT\r\n');
+    return start < 0 ? '' : calendar.ics.slice(start + 2, -'END:VCALENDAR\r\n'.length);
+  }).join('');
+  const ics = `${header}${events}END:VCALENDAR\r\n`;
+  const eventCount = calendars.reduce((count, calendar) => count + calendar.eventCount, 0);
+  if (eventCount > 20_000 || new TextEncoder().encode(ics).length > 2_000_000) invalid();
+  return { ics, eventCount };
 }

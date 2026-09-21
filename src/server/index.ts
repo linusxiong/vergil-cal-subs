@@ -1,10 +1,10 @@
-import type { CalendarSnapshot, SyncRequest } from '../shared';
+import type { CalendarLookupRequest, CalendarSemester, CalendarSnapshot, SyncRequest } from '../shared';
 import { isManagementPage, isPublicPage, noIndex, pageSeo, publicContent, seoHead, sitemap } from '../seo';
-import { generateCalendar, normalizeCourses } from './calendar';
-import { ApiFailure, fetchRegisteredCourses, sha256 } from './vergil';
+import { generateSemesterCalendar, normalizeCourses } from './calendar';
+import { ApiFailure, authenticateColumbia, fetchRegisteredCourses, sha256, verifyColumbiaIdentity } from './vergil';
 
 export interface Env { DB: D1Database; ASSETS: Fetcher; PUBLIC_APP_URL?: string }
-interface CalendarRow { id: string; management_hash: string; subject_hash: string; snapshot: string; ics: string; etag: string; revision: number }
+interface CalendarRow { id: string; feed_id: string; management_hash: string; subject_hash: string; snapshot: string; ics: string; etag: string; revision: number }
 const securityHeaders = {
   'Referrer-Policy': 'no-referrer',
   'X-Content-Type-Options': 'nosniff',
@@ -15,9 +15,9 @@ function json(value: unknown, status = 200) {
   return Response.json(value, { status, headers: { ...securityHeaders, 'Cache-Control': 'no-store', 'X-Robots-Tag': noIndex } });
 }
 function secret() { return [...crypto.getRandomValues(new Uint8Array(32))].map((byte) => byte.toString(16).padStart(2, '0')).join(''); }
-function invalidInput() { return new ApiFailure(400, 'INVALID_INPUT', 'Provide both tokens, a valid term, and valid calendar settings.'); }
+function invalidInput() { return new ApiFailure(400, 'INVALID_INPUT', 'Provide an Access Token, a valid term, and valid calendar settings. Refresh Token is optional.'); }
 
-async function readInput(request: Request): Promise<SyncRequest> {
+async function readCredentials(request: Request): Promise<CalendarLookupRequest & Record<string, any>> {
   if (!request.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')) throw new ApiFailure(415, 'CONTENT_TYPE', 'Send a JSON request.');
   if (Number(request.headers.get('Content-Length') ?? 0) > 32_768) throw new ApiFailure(413, 'BODY_TOO_LARGE', 'The request is too large.');
   const reader = request.body?.getReader();
@@ -38,15 +38,20 @@ async function readInput(request: Request): Promise<SyncRequest> {
   try { value = JSON.parse(new TextDecoder().decode(bytes)); } catch { throw invalidInput(); }
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw invalidInput();
   for (const key of ['accessToken', 'refreshToken']) {
+    if (key === 'refreshToken' && (value[key] === undefined || value[key] === '')) continue;
     if (typeof value[key] !== 'string' || !value[key].length || value[key].length > 16_384 || /\s|[\x00-\x1f\x7f]/.test(value[key])) throw invalidInput();
   }
+  return { ...value, refreshToken: value.refreshToken || undefined };
+}
+async function readInput(request: Request): Promise<SyncRequest> {
+  const value = await readCredentials(request);
   if (typeof value.term !== 'string' || !/^20\d{2}[123]$/.test(value.term)) throw invalidInput();
   if (value.title !== undefined && (typeof value.title !== 'string' || !value.title.trim() || value.title.length > 120 || /[\x00-\x1f\x7f]/.test(value.title))) throw invalidInput();
   if (value.excludedDates !== undefined && (!Array.isArray(value.excludedDates) || value.excludedDates.length > 366)) throw invalidInput();
   for (const date of value.excludedDates ?? []) {
     if (typeof date !== 'string' || !/^20\d{2}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(`${date}T00:00:00Z`)) || new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date) throw invalidInput();
   }
-  return { accessToken: value.accessToken, refreshToken: value.refreshToken, term: value.term, title: value.title?.trim(), excludedDates: [...new Set<string>(value.excludedDates ?? [])].sort() };
+  return { accessToken: value.accessToken, refreshToken: value.refreshToken || undefined, term: value.term, title: value.title?.trim(), excludedDates: [...new Set<string>(value.excludedDates ?? [])].sort() };
 }
 async function managed(request: Request, env: Env, id: string): Promise<CalendarRow> {
   const bearer = /^Bearer ([a-f0-9]{64})$/.exec(request.headers.get('Authorization') ?? '');
@@ -56,7 +61,9 @@ async function managed(request: Request, env: Env, id: string): Promise<Calendar
   return row;
 }
 function snapshot(row: CalendarRow, origin: string): CalendarSnapshot {
-  return { ...JSON.parse(row.snapshot), id: row.id, feedUrl: `${origin}/calendar/${row.id}.ics` };
+  const stored = JSON.parse(row.snapshot);
+  const semesters: CalendarSemester[] = stored.semesters ?? [{ term: stored.term, updatedAt: stored.updatedAt, courses: stored.courses, excludedDates: stored.excludedDates, warnings: stored.warnings }];
+  return { ...stored, semesters, id: row.id, feedUrl: `${origin}/calendar/${row.feed_id}.ics` };
 }
 
 async function route(request: Request, env: Env): Promise<Response> {
@@ -67,28 +74,41 @@ async function route(request: Request, env: Env): Promise<Response> {
     const suppliedOrigin = request.headers.get('Origin');
     if (suppliedOrigin && suppliedOrigin !== origin) throw new ApiFailure(403, 'ORIGIN', 'This request must come from the calendar application.');
   }
-  const api = /^\/api\/calendars\/([a-f0-9]{64})(\/sync)?$/.exec(path);
+  const api = /^\/api\/calendars\/([a-f0-9]{64})(\/sync|\/rotate)?$/.exec(path);
   const create = path === '/api/calendars' && request.method === 'POST';
   const sync = api?.[2] === '/sync' && request.method === 'POST';
+  if (path === '/api/calendars/lookup' && request.method === 'POST') {
+    const identity = await verifyColumbiaIdentity(await readCredentials(request));
+    const rows = await env.DB.prepare("SELECT * FROM calendars WHERE subject_hash = ? ORDER BY json_extract(snapshot, '$.updatedAt') DESC, id").bind(identity.subjectHash).all<CalendarRow>();
+    return json({ calendars: rows.results.map(row => snapshot(row, origin)), refreshed: identity.refreshed });
+  }
   if (create || sync) {
-    // Check calendar control before reading or forwarding the school credentials.
-    const existing = sync ? await managed(request, env, api![1]!) : undefined;
+    // A supplied management key must be valid; without one, verified school identity authorizes the update below.
+    let existing = sync ? (request.headers.has('Authorization')
+      ? await managed(request, env, api![1]!)
+      : await env.DB.prepare('SELECT * FROM calendars WHERE id = ?').bind(api![1]!).first<CalendarRow>()) : undefined;
+    if (sync && !existing) throw new ApiFailure(404, 'NOT_FOUND', 'Calendar not found.');
     const input = await readInput(request);
-    const fetched = await fetchRegisteredCourses(input, existing?.subject_hash);
+    const school = await authenticateColumbia(input);
+    if (create) existing = await env.DB.prepare('SELECT * FROM calendars WHERE subject_hash = ?').bind(school.subjectHash).first<CalendarRow>();
+    const fetched = await fetchRegisteredCourses(input, existing?.subject_hash, school);
     const id = existing?.id ?? secret();
     const managementToken = existing ? undefined : secret();
     let normalized: ReturnType<typeof normalizeCourses>;
-    let generated: ReturnType<typeof generateCalendar>;
-    const title = input.title ?? 'Columbia classes';
+    let generated: ReturnType<typeof generateSemesterCalendar>;
+    const previous = existing ? snapshot(existing, origin) : undefined;
+    const title = input.title ?? previous?.title ?? 'Columbia classes';
     const previousTime = existing ? Date.parse(JSON.parse(existing.snapshot).updatedAt) : 0;
     const updatedAt = new Date(Math.max(Date.now(), previousTime + 1_000)).toISOString();
+    let semesters: CalendarSemester[];
     try {
       normalized = normalizeCourses(fetched.rawCourses, fetched.registeredIds);
-      generated = generateCalendar({ calendarId: id, title, courses: normalized.courses, excludedDates: input.excludedDates ?? [], updatedAt });
+      semesters = [...(previous?.semesters ?? []).filter(semester => semester.term !== input.term), { term: input.term, updatedAt, courses: normalized.courses, excludedDates: input.excludedDates ?? [], warnings: normalized.warnings }].sort((a, b) => b.term.localeCompare(a.term));
+      generated = generateSemesterCalendar(id, title, semesters);
     } catch { throw new ApiFailure(502, 'UPSTREAM_DATA', 'Could not interpret the complete class schedule. The saved calendar was not changed.'); }
     const stored = {
-      title, term: input.term, updatedAt, courseCount: normalized.courses.length, eventCount: generated.eventCount,
-      courses: normalized.courses, excludedDates: input.excludedDates ?? [], warnings: normalized.warnings,
+      title, term: input.term, updatedAt, courseCount: semesters.reduce((count, semester) => count + semester.courses.length, 0), eventCount: generated.eventCount,
+      courses: semesters.flatMap(semester => semester.courses), excludedDates: input.excludedDates ?? [], warnings: [...new Set(semesters.flatMap(semester => semester.warnings))], semesters,
     };
     const etag = `"${await sha256(generated.ics)}"`;
     const serialized = JSON.stringify(stored);
@@ -97,10 +117,23 @@ async function route(request: Request, env: Env): Promise<Response> {
         .bind(serialized, generated.ics, etag, id, existing.management_hash, existing.revision).run();
       if (result.meta.changes !== 1) throw new ApiFailure(409, 'SYNC_CONFLICT', 'The calendar changed during this sync. Reload it and try again.');
     } else {
-      await env.DB.prepare('INSERT INTO calendars (id, management_hash, subject_hash, snapshot, ics, etag) VALUES (?, ?, ?, ?, ?, ?)')
-        .bind(id, await sha256(managementToken!), fetched.subjectHash, serialized, generated.ics, etag).run();
+      const result = await env.DB.prepare('INSERT INTO calendars (id, feed_id, management_hash, subject_hash, snapshot, ics, etag) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(subject_hash) DO NOTHING')
+        .bind(id, id, await sha256(managementToken!), fetched.subjectHash, serialized, generated.ics, etag).run();
+      if (result.meta.changes !== 1) throw new ApiFailure(409, 'SYNC_CONFLICT', 'A calendar was created for this account while this request was running. Find your calendar and try again.');
     }
-    return json({ ...stored, id, feedUrl: `${origin}/calendar/${id}.ics`, ...(managementToken ? { managementToken } : {}), refreshed: fetched.refreshed }, create ? 201 : 200);
+    return json({ ...stored, id, feedUrl: `${origin}/calendar/${existing?.feed_id ?? id}.ics`, ...(managementToken ? { managementToken } : {}), refreshed: fetched.refreshed }, existing ? 200 : 201);
+  }
+  if (api?.[2] === '/rotate' && request.method === 'POST') {
+    const row = request.headers.has('Authorization') ? await managed(request, env, api[1]!) : await env.DB.prepare('SELECT * FROM calendars WHERE id = ?').bind(api[1]!).first<CalendarRow>();
+    if (!row) throw new ApiFailure(404, 'NOT_FOUND', 'Calendar not found.');
+    if (!request.headers.has('Authorization')) {
+      const identity = await verifyColumbiaIdentity(await readCredentials(request));
+      if (identity.subjectHash !== row.subject_hash) throw new ApiFailure(403, 'OWNER_MISMATCH', 'Use the Columbia account that created this calendar.');
+    }
+    const feedId = secret();
+    const result = await env.DB.prepare('UPDATE calendars SET feed_id = ?, revision = revision + 1 WHERE id = ? AND revision = ?').bind(feedId, row.id, row.revision).run();
+    if (result.meta.changes !== 1) throw new ApiFailure(409, 'SYNC_CONFLICT', 'The calendar changed. Reload it and try again.');
+    return json(snapshot({ ...row, feed_id: feedId }, origin));
   }
   if (api && !api[2] && ['GET', 'DELETE'].includes(request.method)) {
     const row = await managed(request, env, api[1]!);
@@ -110,7 +143,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   }
   const feed = /^\/calendar\/([a-f0-9]{64})\.ics$/.exec(path);
   if (feed && ['GET', 'HEAD'].includes(request.method)) {
-    const row = await env.DB.prepare('SELECT * FROM calendars WHERE id = ?').bind(feed[1]!).first<CalendarRow>();
+    const row = await env.DB.prepare('SELECT * FROM calendars WHERE feed_id = ?').bind(feed[1]!).first<CalendarRow>();
     if (!row) throw new ApiFailure(404, 'NOT_FOUND', 'Calendar not found.');
     const headers = { ...securityHeaders, 'Content-Type': 'text/calendar; charset=utf-8', 'Content-Disposition': 'inline; filename="classes.ics"', 'Cache-Control': 'private, no-cache', 'X-Robots-Tag': noIndex, ETag: row.etag };
     const tags = request.headers.get('If-None-Match')?.split(',').map((tag) => tag.trim().replace(/^W\//, '')) ?? [];

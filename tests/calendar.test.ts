@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { CalendarDataError, generateCalendar, normalizeCourses } from '../src/server/calendar';
+import { CalendarDataError, generateCalendar, generateSemesterCalendar, normalizeCourses } from '../src/server/calendar';
 import type { Course } from '../src/shared';
 
 // Entirely synthetic; no student information or captured course schedules.
@@ -158,4 +158,16 @@ describe('generateCalendar', () => {
     many[0]!.meetings = Array.from({ length: 400 }, (_, i) => ({ ...many[0]!.meetings[0]!, id: String(i), startDate: '2026-01-01', endDate: '2026-12-31' }));
     expect(() => calendar({ courses: many })).toThrow(CalendarDataError);
   });
+});
+
+
+test('semester aggregation preserves calendar titles resembling ICS markers', () => {
+  const semester = { term: '20263', updatedAt: '2026-09-21T12:00:00Z', courses: courses(), excludedDates: [], warnings: [] };
+  for (const title of ['BEGIN:VEVENT', 'END:VCALENDAR']) {
+    const result = generateSemesterCalendar('test-calendar', title, [semester]);
+    expect(result.ics).toContain(`X-WR-CALNAME:${title}\r\n`);
+    expect(result.ics.match(/(?:^|\r\n)BEGIN:VCALENDAR\r\n/g)).toHaveLength(1);
+    expect(result.ics.match(/\r\nBEGIN:VEVENT\r\n/g)?.length).toBe(result.eventCount);
+    expect(result.ics.endsWith('END:VCALENDAR\r\n')).toBe(true);
+  }
 });

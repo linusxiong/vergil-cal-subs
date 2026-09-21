@@ -1,4 +1,4 @@
-import type { SyncRequest } from '../shared';
+import type { CalendarLookupRequest, SyncRequest } from '../shared';
 
 export class ApiFailure extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
@@ -23,8 +23,8 @@ function identifier(value: unknown): string {
   return String(value);
 }
 
-// No token state survives this function. Refresh is attempted at most once per sync.
-export async function fetchRegisteredCourses(input: SyncRequest, expectedSubjectHash?: string) {
+// A request-scoped session; no token is returned or persisted.
+export async function authenticateColumbia(input: CalendarLookupRequest) {
   let accessToken = input.accessToken;
   let refreshed = false;
   let authenticatedSubject: string | undefined;
@@ -63,7 +63,7 @@ export async function fetchRegisteredCourses(input: SyncRequest, expectedSubject
     // Columbia's JSON:API endpoints return 406 for application/json alone.
     const accept = new URL(url).origin === OAUTH ? 'application/json' : 'application/vnd.api+json, application/json';
     let response = await fetchJson(url, { headers: { Authorization: `Bearer ${accessToken}`, Accept: accept } });
-    if (response.status === 401 && !refreshed) {
+    if (response.status === 401 && !refreshed && input.refreshToken) {
       refreshed = true;
       const token = await fetchJson(`${OAUTH}/as/token.oauth2`, {
         method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
@@ -71,7 +71,7 @@ export async function fetchRegisteredCourses(input: SyncRequest, expectedSubject
       });
       const next = token.value?.access_token;
       if (token.status !== 200 || typeof next !== 'string' || !next.length || next.length > 16_384 || /\s/.test(next)) {
-        throw new ApiFailure(401, 'COLUMBIA_AUTH', 'Columbia rejected these credentials. Paste a fresh Access Token and Refresh Token.');
+        throw new ApiFailure(401, 'COLUMBIA_AUTH', 'Columbia rejected these credentials. Paste a fresh Access Token. Refresh Token is optional.');
       }
       accessToken = next;
       if (authenticatedSubject) {
@@ -82,10 +82,26 @@ export async function fetchRegisteredCourses(input: SyncRequest, expectedSubject
       }
       response = await fetchJson(url, { headers: { Authorization: `Bearer ${accessToken}`, Accept: accept } });
     }
-    if (response.status === 401 || response.status === 403) throw new ApiFailure(401, 'COLUMBIA_AUTH', 'Columbia rejected these credentials. Paste a fresh Access Token and Refresh Token.');
+    if (response.status === 401 || response.status === 403) throw new ApiFailure(401, 'COLUMBIA_AUTH', 'Columbia rejected these credentials. Paste a fresh Access Token. Refresh Token is optional.');
     if (!response.value) throw new ApiFailure(502, 'UPSTREAM_UNAVAILABLE', `Columbia returned HTTP ${response.status} at ${new URL(url).pathname}. The saved calendar was not changed.`);
     return response.value;
   }
+  const identity = await get(`${OAUTH}/idp/userinfo.openid`);
+  const uni = identityUni(identity.sub);
+  authenticatedSubject = uni;
+  const subjectHash = await sha256(uni);
+  return { uni, subjectHash, get, get refreshed() { return refreshed; } };
+}
+
+export async function verifyColumbiaIdentity(input: CalendarLookupRequest) {
+  const session = await authenticateColumbia(input);
+  return { subjectHash: session.subjectHash, refreshed: session.refreshed };
+}
+
+export async function fetchRegisteredCourses(input: SyncRequest, expectedSubjectHash?: string, authenticated?: Awaited<ReturnType<typeof authenticateColumbia>>) {
+  const session = authenticated ?? await authenticateColumbia(input);
+  const { get, uni, subjectHash } = session;
+  if (expectedSubjectHash && subjectHash !== expectedSubjectHash) throw new ApiFailure(403, 'OWNER_MISMATCH', 'Use the Columbia account that created this calendar.');
   // Only page parameters may change; pagination cannot move credentials to another host/path or student.
   async function pages(url: URL, read: (page: ObjectValue) => number): Promise<void> {
     const initial = new URL(url);
@@ -123,11 +139,6 @@ export async function fetchRegisteredCourses(input: SyncRequest, expectedSubject
     }
     throw invalidUpstream();
   }
-  const identity = await get(`${OAUTH}/idp/userinfo.openid`);
-  const uni = identityUni(identity.sub);
-  authenticatedSubject = uni;
-  const subjectHash = await sha256(uni);
-  if (expectedSubjectHash && subjectHash !== expectedSubjectHash) throw new ApiFailure(403, 'OWNER_MISMATCH', 'Use the Columbia account that created this calendar.');
   const personUrl = new URL('/v1/personrolestatuses', PERSONS);
   personUrl.search = new URLSearchParams({ include: 'person', 'filter[person__uni]': uni, 'filter[person__is_active]': 'True', 'page[size]': '1' }).toString();
   const personPage = await get(personUrl.href);
@@ -174,7 +185,7 @@ export async function fetchRegisteredCourses(input: SyncRequest, expectedSubject
       return page.data.courses.length;
     });
   }
-  return { rawCourses, registeredIds, subjectHash, refreshed };
+  return { rawCourses, registeredIds, subjectHash, refreshed: session.refreshed };
 }
 
 export async function sha256(value: string): Promise<string> {
