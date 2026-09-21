@@ -54,8 +54,9 @@ a, button, input, textarea, summary { -webkit-tap-highlight-color: transparent; 
 .guide a:hover { text-decoration: underline; }
 .guide code { font-size: 0.825rem; overflow-wrap: anywhere; }
 @layer components {
-  .button, .input { min-height: 44px; }
-  .input, .textarea { font-size: 16px; }
+  .button, .input, .select__trigger { min-height: 44px; }
+  .input, .textarea, .select__value { font-size: 16px; }
+  .select__trigger { align-items: center; }
   .card { box-shadow: 0 2px 8px rgb(0 0 0 / 0.025); border: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
 }
 @media (prefers-reduced-motion: reduce) {
