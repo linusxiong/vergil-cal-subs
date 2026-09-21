@@ -1,0 +1,38 @@
+// Production deployment for vergilcal.xsy.app. Forks should use wrangler.jsonc.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "vergil-cal-subs",
+  "main": "src/server/index.ts",
+  "compatibility_date": "2026-09-21",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vergil-cal-subs",
+      "database_id": "e30fa9b9-a99f-404e-bff4-b4578edef8af",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": {
+    "enabled": false
+  },
+  "account_id": "31a46fda7d6e1f39cbb92e09730ef39c",
+  "routes": [
+    {
+      "pattern": "vergilcal.xsy.app",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "PUBLIC_APP_URL": "https://vergilcal.xsy.app"
+  },
+  "workers_dev": false,
+  "preview_urls": false
+}

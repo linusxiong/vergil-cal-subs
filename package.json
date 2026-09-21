@@ -14,11 +14,15 @@
     "check": "bun run typecheck && bun test && bun run build",
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote --config ${CLOUDFLARE_CONFIG:-wrangler.jsonc}",
-    "deploy": "bun run build && bun run db:migrate:remote && wrangler deploy"
+    "deploy": "bun run build && bun run db:migrate:remote && wrangler deploy",
+    "commitlint": "commitlint",
+    "hooks:install": "git config core.hooksPath .githooks"
   },
   "cloudflare": {
     "bindings": {
-      "DB": { "description": "Stores course snapshots and calendar management hashes. School access and refresh tokens are never stored." }
+      "DB": {
+        "description": "Stores course snapshots and calendar management hashes. School access and refresh tokens are never stored."
+      }
     }
   },
   "dependencies": {
@@ -27,12 +31,16 @@
     "@phosphor-icons/react": "^2.1.10",
     "@tanstack/react-query": "^5.103.2",
     "@tanstack/react-router": "^1.170.38",
+    "i18next": "^26.4.2",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "react-i18next": "^17.0.15"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.57.1",
     "@cloudflare/workers-types": "^5.20260921.1",
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
     "@tailwindcss/vite": "^4.3.3",
     "@types/bun": "^1.4.2",
     "@types/react": "^19.3.0",

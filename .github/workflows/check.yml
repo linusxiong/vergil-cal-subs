@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -17,4 +19,14 @@ jobs:
         with:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
+      - name: Check commit messages
+        env:
+          COMMIT_FROM: ${{ github.event.pull_request.base.sha || github.event.before }}
+          COMMIT_TO: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -n "$COMMIT_FROM" ] && [ "$COMMIT_FROM" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$COMMIT_FROM^{commit}"; then
+            bun run commitlint --from "$COMMIT_FROM" --to "$COMMIT_TO"
+          else
+            bun run commitlint --last
+          fi
       - run: bun run check
