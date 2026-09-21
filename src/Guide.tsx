@@ -5,7 +5,7 @@ import { useLocale } from './locale';
 const githubUrl = import.meta.env.VITE_GITHUB_URL || 'https://github.com/linusxiong/vergil-cal-subs';
 
 export default function GuidePage() {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   return <div className="max-w-3xl">
     <div className="mb-9 max-w-2xl sm:mb-11">
       <p className="mb-3 text-xs font-semibold tracking-[0.15em] text-muted uppercase">{t('A little help', '使用指南')}</p>
@@ -50,6 +50,6 @@ export default function GuidePage() {
         <a href={githubUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm" aria-label={t('Source code and deployment guide on GitHub (opens in a new tab)', '查看 GitHub 源代码与部署说明（在新标签页打开）')}><GithubLogoIcon size={19} aria-hidden="true" />{t('Source code and deployment guide on GitHub', '查看 GitHub 源代码与部署说明')} <ArrowSquareOutIcon size={14} aria-hidden="true" /></a>
       </section>
     </div>
-    <Link to="/" className="mt-8 inline-flex min-h-11 items-center gap-2 font-medium text-accent">{t('Create a subscription', '开始创建订阅')} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
+    <Link to="/" search={{ lang: locale }} className="mt-8 inline-flex min-h-11 items-center gap-2 font-medium text-accent">{t('Create a subscription', '开始创建订阅')} <ArrowRightIcon size={17} aria-hidden="true" /></Link>
   </div>;
 }

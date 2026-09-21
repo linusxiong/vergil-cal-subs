@@ -1,4 +1,5 @@
 import type { CalendarSnapshot, SyncRequest } from '../shared';
+import { isManagementPage, isPublicPage, noIndex, pageSeo, publicContent, seoHead, sitemap } from '../seo';
 import { generateCalendar, normalizeCourses } from './calendar';
 import { ApiFailure, fetchRegisteredCourses, sha256 } from './vergil';
 
@@ -11,7 +12,7 @@ const securityHeaders = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
 function json(value: unknown, status = 200) {
-  return Response.json(value, { status, headers: { ...securityHeaders, 'Cache-Control': 'no-store' } });
+  return Response.json(value, { status, headers: { ...securityHeaders, 'Cache-Control': 'no-store', 'X-Robots-Tag': noIndex } });
 }
 function secret() { return [...crypto.getRandomValues(new Uint8Array(32))].map((byte) => byte.toString(16).padStart(2, '0')).join(''); }
 function invalidInput() { return new ApiFailure(400, 'INVALID_INPUT', 'Provide both tokens, a valid term, and valid calendar settings.'); }
@@ -105,23 +106,54 @@ async function route(request: Request, env: Env): Promise<Response> {
     const row = await managed(request, env, api[1]!);
     if (request.method === 'GET') return json(snapshot(row, origin));
     await env.DB.prepare('DELETE FROM calendars WHERE id = ? AND management_hash = ?').bind(row.id, row.management_hash).run();
-    return new Response(null, { status: 204, headers: { ...securityHeaders, 'Cache-Control': 'no-store' } });
+    return new Response(null, { status: 204, headers: { ...securityHeaders, 'Cache-Control': 'no-store', 'X-Robots-Tag': noIndex } });
   }
   const feed = /^\/calendar\/([a-f0-9]{64})\.ics$/.exec(path);
   if (feed && ['GET', 'HEAD'].includes(request.method)) {
     const row = await env.DB.prepare('SELECT * FROM calendars WHERE id = ?').bind(feed[1]!).first<CalendarRow>();
     if (!row) throw new ApiFailure(404, 'NOT_FOUND', 'Calendar not found.');
-    const headers = { ...securityHeaders, 'Content-Type': 'text/calendar; charset=utf-8', 'Content-Disposition': 'inline; filename="classes.ics"', 'Cache-Control': 'private, no-cache', ETag: row.etag };
+    const headers = { ...securityHeaders, 'Content-Type': 'text/calendar; charset=utf-8', 'Content-Disposition': 'inline; filename="classes.ics"', 'Cache-Control': 'private, no-cache', 'X-Robots-Tag': noIndex, ETag: row.etag };
     const tags = request.headers.get('If-None-Match')?.split(',').map((tag) => tag.trim().replace(/^W\//, '')) ?? [];
     if (tags.includes(row.etag) || tags.includes('*')) return new Response(null, { status: 304, headers });
     return new Response(request.method === 'HEAD' ? null : row.ics, { headers });
   }
   if (path === '/api' || path.startsWith('/api/') || path.startsWith('/calendar/')) throw new ApiFailure(404, 'NOT_FOUND', 'Not found.');
-  const asset = await env.ASSETS.fetch(request);
+  if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status: 405, headers: { ...securityHeaders, Allow: 'GET, HEAD', 'X-Robots-Tag': noIndex } });
+  if (path === '/robots.txt' || path === '/sitemap.xml') {
+    // Allow crawlers to see noindex on private URLs; robots exclusions would hide it.
+    const body = path === '/robots.txt' ? `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n` : sitemap(origin);
+    return new Response(request.method === 'HEAD' ? null : body, { headers: { ...securityHeaders, 'Content-Type': path === '/robots.txt' ? 'text/plain; charset=utf-8' : 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+  }
+  if (path === '/index.html' || path === '/guide/' || /^\/manage\/[a-f0-9]{64}\/$/.test(path)) {
+    url.pathname = path === '/index.html' ? '/' : path.slice(0, -1);
+    return new Response(null, { status: 308, headers: { ...securityHeaders, Location: `${url.pathname}${url.search}` } });
+  }
+  const knownPage = isPublicPage(path) || isManagementPage(path);
+  // Fetch the app shell explicitly; missing assets must not inherit SPA fallback's 200.
+  const assetRequest = new Request(knownPage ? new URL('/', url) : url, { method: 'GET', headers: knownPage ? undefined : request.headers });
+  const asset = await env.ASSETS.fetch(assetRequest);
   const headers = new Headers(asset.headers);
   for (const [name, value] of Object.entries(securityHeaders)) headers.set(name, value);
   headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
-  return new Response(asset.body, { status: asset.status, headers });
+  const html = asset.headers.get('Content-Type')?.includes('text/html');
+  if (knownPage || html) {
+    const page = pageSeo(url, origin);
+    headers.set('Cache-Control', isPublicPage(path) ? 'public, max-age=0, must-revalidate' : 'no-store');
+    headers.delete('ETag');
+    headers.delete('Last-Modified');
+    headers.delete('Content-Length');
+    headers.set('Content-Type', 'text/html; charset=utf-8');
+    if (!page.publicPage) headers.set('X-Robots-Tag', noIndex);
+    const rewritten = new HTMLRewriter()
+      .on('html', { element(element) { element.setAttribute('lang', page.locale); } })
+      .on('[data-seo]', { element(element) { element.remove(); } })
+      .on('head', { element(element) { element.append(seoHead(page), { html: true }); } })
+      .on('#root', { element(element) { element.setInnerContent(publicContent(page), { html: true }); } })
+      .transform(new Response(asset.body, { status: knownPage ? asset.status : 404, headers }));
+    return request.method === 'HEAD' ? new Response(null, { status: rewritten.status, headers: rewritten.headers }) : rewritten;
+  }
+  if (asset.status >= 400) headers.set('X-Robots-Tag', noIndex);
+  return new Response(request.method === 'HEAD' ? null : asset.body, { status: asset.status, headers });
 }
 
 export default {

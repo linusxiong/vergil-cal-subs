@@ -5,6 +5,10 @@ const storageKey = 'vergil-calendar-language';
 const LocaleContext = createContext<{ locale: Locale; setLocale: (locale: Locale) => void }>({ locale: 'en', setLocale: () => {} });
 
 export function readLocale(): Locale {
+  if (typeof window !== 'undefined') {
+    const language = new URLSearchParams(window.location.search).get('lang');
+    if (language === 'en' || language === 'zh-CN') return language;
+  }
   try { return localStorage.getItem(storageKey) === 'zh-CN' ? 'zh-CN' : 'en'; }
   catch { return 'en'; }
 }
@@ -13,7 +17,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(readLocale);
   useEffect(() => {
     document.documentElement.lang = locale;
-    document.title = locale === 'en' ? 'Vergil Calendar · Course subscriptions' : 'Vergil Calendar · 课程日历订阅';
     try { localStorage.setItem(storageKey, locale); } catch { /* The page still works when storage is blocked. */ }
   }, [locale]);
   return <LocaleContext.Provider value={{ locale, setLocale }}>{children}</LocaleContext.Provider>;

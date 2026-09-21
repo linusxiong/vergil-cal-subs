@@ -12,9 +12,14 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "check": "bun run typecheck && bun test && bun run build",
-    "db:migrate": "wrangler d1 migrations apply vergil-cal-subs --local",
-    "db:migrate:remote": "wrangler d1 migrations apply vergil-cal-subs --remote",
-    "deploy": "bun run build && wrangler deploy"
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote --config ${CLOUDFLARE_CONFIG:-wrangler.jsonc}",
+    "deploy": "bun run build && bun run db:migrate:remote && wrangler deploy"
+  },
+  "cloudflare": {
+    "bindings": {
+      "DB": { "description": "Stores course snapshots and calendar management hashes. School access and refresh tokens are never stored." }
+    }
   },
   "dependencies": {
     "@heroui/react": "^3.2.6",

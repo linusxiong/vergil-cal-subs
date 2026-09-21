@@ -67,12 +67,15 @@ test('creation, stable subscription, management isolation, and deletion never st
   expect(JSON.stringify(created)).not.toContain(input.accessToken);
   const feed = await worker.fetch(new Request(created.feedUrl), env);
   expect(feed.headers.get('Content-Type')).toContain('text/calendar');
+  expect(feed.headers.get('X-Robots-Tag')).toContain('noindex');
   expect(await feed.text()).toContain('BEGIN:VEVENT');
   const cached = await worker.fetch(new Request(created.feedUrl, { headers: { 'If-None-Match': feed.headers.get('ETag')! } }), env);
   expect(cached.status).toBe(304);
+  expect(cached.headers.get('X-Robots-Tag')).toContain('noindex');
   const denied = await worker.fetch(request(`/api/calendars/${created.id}`, undefined, created.id, 'GET'), env);
   expect(denied.status).toBe(401);
   const read = await worker.fetch(request(`/api/calendars/${created.id}`, undefined, created.managementToken, 'GET'), env);
+  expect(read.headers.get('X-Robots-Tag')).toContain('noindex');
   expect(read.status).toBe(200); expect(read.headers.get('Cache-Control')).toBe('no-store');
   expect(JSON.stringify(await read.json())).not.toContain(created.managementToken);
   const deleted = await worker.fetch(request(`/api/calendars/${created.id}`, undefined, created.managementToken, 'DELETE'), env);

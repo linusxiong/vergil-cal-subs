@@ -16,3 +16,4 @@ test-results/
 *.db*
 coverage/
 tsconfig.tsbuildinfo
+wrangler.deploy.json

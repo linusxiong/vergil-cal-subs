@@ -4,6 +4,6 @@ import tailwindcss from '@tailwindcss/vite';
 import { cloudflare } from '@cloudflare/vite-plugin';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), cloudflare()],
+  plugins: [react(), tailwindcss(), cloudflare({ configPath: process.env.CLOUDFLARE_CONFIG || 'wrangler.jsonc' })],
   server: { host: '127.0.0.1' },
 });

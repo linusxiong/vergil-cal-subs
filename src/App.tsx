@@ -1,10 +1,11 @@
-import { useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { createRootRoute, createRoute, createRouter, Link, Outlet, useLocation } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Description, Input, Label, Skeleton, Spinner, TextArea, TextField, Select, ListBox } from '@heroui/react';
 import { ArrowRightIcon, ArrowSquareOutIcon, ArrowsClockwiseIcon, CalendarBlankIcon, CheckIcon, CopyIcon, GithubLogoIcon, LockSimpleIcon, ShieldCheckIcon, TrashIcon } from '@phosphor-icons/react';
 import GuidePage from './Guide';
 import { useLocale, localizeWarning } from './locale';
+import { pageSeo, seoHead } from './seo';
 import { currentTerm, termOptions, termLabel } from './terms';
 import type { CalendarSnapshot, SyncRequest, SyncResponse } from './shared';
 
@@ -33,19 +34,31 @@ function Notice({ children, error = false }: { children: ReactNode; error?: bool
 
 function Shell() {
   const { locale, setLocale, t } = useLocale();
+  const location = useLocation();
+  useEffect(() => {
+    if (location.search.lang) setLocale(location.search.lang);
+    else if (locale === 'zh-CN') void router.navigate({ to: '.', search: { lang: locale }, hash: location.hash, replace: true });
+  }, [location.search.lang]);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', location.search.lang ?? locale);
+    const origin = document.querySelector<HTMLMetaElement>('meta[name="app-origin"]')?.content || url.origin;
+    document.head.querySelectorAll('[data-seo]').forEach(element => element.remove());
+    document.head.insertAdjacentHTML('beforeend', seoHead(pageSeo(url, origin)));
+  }, [location.pathname, location.search.lang, locale]);
   return <div className="min-h-screen flex flex-col">
     <a className="skip-link" href="#main" onClick={event => { event.preventDefault(); document.getElementById('main')?.focus(); }}>{t("Skip to main content", "跳至主要内容")}</a>
     <header className="border-b border-border/60 bg-surface/80">
       <div className="mx-auto flex min-h-20 max-w-6xl items-center justify-between gap-4 px-5 sm:px-9">
-        <Link to="/" className="flex min-h-11 items-center gap-2.5 font-semibold tracking-tight">
+        <Link to="/" search={{ lang: locale }} className="flex min-h-11 items-center gap-2.5 font-semibold tracking-tight">
           <CalendarBlankIcon size={24} weight="duotone" className="text-accent" aria-hidden="true" />
           <span>Vergil <span className="hidden font-normal text-muted sm:inline">Calendar</span></span>
         </Link>
         <nav aria-label={t("Main navigation", "主导航")} className="flex items-center gap-2 text-sm sm:gap-7">
-          <Link to="/" className="nav-link hidden sm:inline-flex" activeProps={{ 'aria-current': 'page' }}>{t("Create", "创建订阅")}</Link>
-          <Link to="/guide" className="nav-link inline-flex" activeProps={{ 'aria-current': 'page' }}>{t("Guide", "使用指南")}</Link>
+          <Link to="/" search={{ lang: locale }} className="nav-link hidden sm:inline-flex" activeProps={{ 'aria-current': 'page' }}>{t("Create", "创建订阅")}</Link>
+          <Link to="/guide" search={{ lang: locale }} className="nav-link inline-flex" activeProps={{ 'aria-current': 'page' }}>{t("Guide", "使用指南")}</Link>
           <a href={githubUrl} className="nav-link inline-flex" target="_blank" rel="noreferrer" aria-label={t("GitHub source code (opens in a new tab)", "GitHub 源代码（新窗口）")}><GithubLogoIcon size={21} aria-hidden="true" /><span className="hidden sm:inline">GitHub</span></a>
-          <Button variant="ghost" size="sm" aria-label={t('Switch to Chinese', '切换到英文')} onPress={() => setLocale(locale === 'en' ? 'zh-CN' : 'en')}><span lang={locale === 'en' ? 'zh-CN' : 'en'}>{locale === 'en' ? '中文' : 'English'}</span></Button>
+          <Button variant="ghost" size="sm" aria-label={t('Switch to Chinese', '切换到英文')} onPress={() => { const lang = locale === 'en' ? 'zh-CN' : 'en'; setLocale(lang); void router.navigate({ to: '.', search: { lang }, hash: location.hash, replace: true }); }}><span lang={locale === 'en' ? 'zh-CN' : 'en'}>{locale === 'en' ? '中文' : 'English'}</span></Button>
         </nav>
       </div>
     </header>
@@ -151,7 +164,7 @@ function SyncForm({ snapshot, managementToken, onSuccess, onPendingChange }: {
       <div className="space-y-5 border-t border-border/70 pt-6">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <h3 className="text-sm font-semibold">{t("Connect to Vergil", "连接 Vergil")}</h3>
-          <Link to="/guide" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1 text-sm text-accent">{t("How to get tokens", "如何获取 Token")} <ArrowSquareOutIcon size={14} aria-hidden="true" /></Link>
+          <Link to="/guide" search={{ lang: locale }} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1 text-sm text-accent">{t("How to get tokens", "如何获取 Token")} <ArrowSquareOutIcon size={14} aria-hidden="true" /></Link>
         </div>
         <TextField key={`access-${credentialVersion}`} name="accessToken" isRequired autoComplete="off">
           <Label>Access Token</Label>
@@ -183,7 +196,7 @@ function SyncForm({ snapshot, managementToken, onSuccess, onPendingChange }: {
 }
 
 function CreatePage() {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const [created, setCreated] = useState<SyncResponse>();
   if (created) return <>
     <Intro eyebrow={t('Ready for your calendar', '准备就绪')} title={t("Your schedule is ready.", "课表，准备好了。")}>{t("Subscribe once to see your courses in your favorite calendar. Save your private management link first.", "订阅一次，即可在常用日历里查看课程。请先保存下方的私密管理链接。")}</Intro>
@@ -202,14 +215,14 @@ function CreatePage() {
       <aside className="space-y-8 lg:pt-3">
         <HowItWorks />
         <div className="border-t border-border/80 pt-7"><div className="mb-3 flex items-center gap-2 text-sm font-semibold"><ShieldCheckIcon size={21} className="text-accent" aria-hidden="true" />{t("Your credentials, used just this once", "你的凭据，只用于这次读取")}</div><p className="text-sm leading-7 text-muted">{t("We save the course snapshot needed for your calendar, never your school tokens. Tokens pass through this server, so only use a deployment you trust.", "服务只保存生成日历所需的课程快照，不保存学校 Token。Token 仍会经过部署此服务的服务器，请仅使用你信任的部署。")}</p></div>
-        <Link to="/guide" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-accent">{t("First time here? Read the guide", "第一次使用？查看完整指南")} <ArrowRightIcon size={16} aria-hidden="true" /></Link>
+        <Link to="/guide" search={{ lang: locale }} className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-accent">{t("First time here? Read the guide", "第一次使用？查看完整指南")} <ArrowRightIcon size={16} aria-hidden="true" /></Link>
       </aside>
     </div>
   </>;
 }
 
 function HowItWorks() {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   return <section aria-labelledby="how-it-works"><h2 id="how-it-works" className="mb-6 text-sm font-semibold">{t("From class schedule to calendar", "从课程到日常，只需三步")}</h2><ol className="space-y-6">
     {[
       [t("Get your tokens", "获取 Token"), t("Sign in to Vergil and copy both tokens from your browser’s developer tools.", "登录 Vergil，在浏览器开发者工具中复制两项 Token。")],
@@ -220,7 +233,7 @@ function HowItWorks() {
 }
 
 function CopyField({ label, value, privateLink = false }: { label: string; value: string; privateLink?: boolean }) {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const [status, setStatus] = useState<Translation | null>(null);
   async function copy() {
     try { await navigator.clipboard.writeText(value); setStatus(["Copied", "已复制"]); }
@@ -234,7 +247,7 @@ function CopyField({ label, value, privateLink = false }: { label: string; value
 }
 
 function SubscriptionLinks({ snapshot, managementToken }: { snapshot: CalendarSnapshot; managementToken: string }) {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const feed = new URL(snapshot.feedUrl, window.location.origin).href;
   const manage = `${window.location.origin}/manage/${encodeURIComponent(snapshot.id)}#${managementToken}`;
   return <Card className="p-6 sm:p-7"><Card.Header><Card.Title className="text-lg">{t("Add to your calendar", "添加到日历")}</Card.Title><Card.Description>{t("Copy the link and choose “Subscribe to calendar” in your calendar app.", "复制链接，在日历 App 中选择“订阅日历”。")}</Card.Description></Card.Header><Card.Content className="mt-5 space-y-6">
@@ -291,8 +304,8 @@ function ManagedCalendar({ id, managementToken }: { id: string; managementToken:
     } catch { setError(["Could not revoke the subscription. Your calendar is still saved. Check your network and management link, then try again.", "撤销失败，日历仍然保留。请检查网络与管理链接后重试。"]); }
     finally { setDeleting(false); }
   }
-  if (deleted) return <><Intro eyebrow={t('Calendar removed', '订阅已撤销')} title={t("Subscription revoked.", "订阅已撤销。")}>{t("The saved course snapshot has been deleted and the old link is no longer valid. You may need to remove cached events from your calendar app.", "服务器上的课程快照已删除，原订阅链接已失效。日历 App 中缓存的事件可能仍需手动移除。")}</Intro><Link to="/" className="inline-flex min-h-11 items-center gap-2 text-accent">{t("Create a new subscription", "创建新的订阅")} <ArrowRightIcon size={17} /></Link></>;
-  if (!managementToken) return <><Intro eyebrow={t('Private calendar', '私密日历')} title={t("Use your full management link.", "需要完整的管理链接。")}>{t("Open the private management link saved when you created your calendar, including everything after #. A subscription link cannot manage a calendar.", "请打开创建日历时保存的私密管理链接，包含 # 后的管理凭据。订阅链接无法用于管理日历。")}</Intro><Link to="/guide" className="inline-flex min-h-11 items-center text-accent">{t("Read the guide", "查看使用指南")}</Link></>;
+  if (deleted) return <><Intro eyebrow={t('Calendar removed', '订阅已撤销')} title={t("Subscription revoked.", "订阅已撤销。")}>{t("The saved course snapshot has been deleted and the old link is no longer valid. You may need to remove cached events from your calendar app.", "服务器上的课程快照已删除，原订阅链接已失效。日历 App 中缓存的事件可能仍需手动移除。")}</Intro><Link to="/" search={{ lang: locale }} className="inline-flex min-h-11 items-center gap-2 text-accent">{t("Create a new subscription", "创建新的订阅")} <ArrowRightIcon size={17} /></Link></>;
+  if (!managementToken) return <><Intro eyebrow={t('Private calendar', '私密日历')} title={t("Use your full management link.", "需要完整的管理链接。")}>{t("Open the private management link saved when you created your calendar, including everything after #. A subscription link cannot manage a calendar.", "请打开创建日历时保存的私密管理链接，包含 # 后的管理凭据。订阅链接无法用于管理日历。")}</Intro><Link to="/guide" search={{ lang: locale }} className="inline-flex min-h-11 items-center text-accent">{t("Read the guide", "查看使用指南")}</Link></>;
   if (query.isPending || query.isFetching) return <div aria-busy="true" aria-label={t("Loading calendar", "正在加载日历")} className="space-y-6"><Skeleton className="h-10 w-64" /><Skeleton className="h-5 w-4/5 max-w-xl" /><Skeleton className="mt-10 h-96 w-full max-w-2xl rounded-3xl" /><p role="status" className="text-sm text-muted">{t("Loading your course calendar…", "正在加载课程日历…")}</p></div>;
   if (query.isError || !query.data) return <><Intro eyebrow={t('Calendar unavailable', '日历暂不可用')} title={t("Calendar unavailable.", "暂时无法打开日历。")}>{query.error instanceof TypeError ? t("Connection failed. Check your network and try again.", "网络连接失败，请检查网络后重试。") : query.error instanceof RequestFailure ? t(...query.error.translation) : t("Check your management link and try again.", "请检查管理链接后重试。")}</Intro><Button variant="secondary" onPress={() => query.refetch()} isPending={query.isFetching}>{t("Reload", "重新加载")}</Button></>;
   const snapshot = query.data;
@@ -310,10 +323,10 @@ function ManagedCalendar({ id, managementToken }: { id: string; managementToken:
 }
 
 function NotFound() {
-  const { t } = useLocale();
-  return <><Intro eyebrow="404" title={t("Page not found.", "这个页面不存在。")}>{t("Return home to create your course calendar subscription.", "返回首页，创建你的课程日历订阅。")}</Intro><Link to="/" className="text-accent">{t("Back to home", "返回首页")}</Link></>;
+  const { locale, t } = useLocale();
+  return <><Intro eyebrow="404" title={t("Page not found.", "这个页面不存在。")}>{t("Return home to create your course calendar subscription.", "返回首页，创建你的课程日历订阅。")}</Intro><Link to="/" search={{ lang: locale }} className="text-accent">{t("Back to home", "返回首页")}</Link></>;
 }
-const rootRoute = createRootRoute({ component: Shell, notFoundComponent: NotFound });
+const rootRoute = createRootRoute({ validateSearch: (search: Record<string, unknown>): { lang?: 'en' | 'zh-CN' } => ({ lang: search.lang === 'en' || search.lang === 'zh-CN' ? search.lang : undefined }), component: Shell, notFoundComponent: NotFound });
 const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: CreatePage });
 const guideRoute = createRoute({ getParentRoute: () => rootRoute, path: '/guide', component: GuidePage });
 const manageRoute = createRoute({ getParentRoute: () => rootRoute, path: '/manage/$id', component: ManagePage });

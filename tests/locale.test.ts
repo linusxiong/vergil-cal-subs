@@ -37,3 +37,21 @@ test('saved course warnings translate without changing course names or unknown m
   expect(localizeWarning(warning, 'zh-CN')).toBe(warning);
   expect(localizeWarning('Unrecognized upstream note', 'en')).toBe('Unrecognized upstream note');
 });
+
+
+test('addressable language overrides the saved browser preference', () => {
+  const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const storageDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  try {
+    for (const [search, saved, expected] of [['?lang=zh-CN', 'en', 'zh-CN'], ['?lang=en', 'zh-CN', 'en'], ['', 'zh-CN', 'zh-CN']] as const) {
+      Object.defineProperty(globalThis, 'window', { configurable: true, value: { location: { search } } });
+      Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: () => saved } });
+      expect(readLocale()).toBe(expected);
+    }
+  } finally {
+    if (windowDescriptor) Object.defineProperty(globalThis, 'window', windowDescriptor);
+    else Reflect.deleteProperty(globalThis, 'window');
+    if (storageDescriptor) Object.defineProperty(globalThis, 'localStorage', storageDescriptor);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});

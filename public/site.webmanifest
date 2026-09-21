@@ -1,0 +1,15 @@
+{
+  "name": "Vergil Calendar",
+  "short_name": "Vergil Calendar",
+  "description": "Sync your Columbia Vergil class schedule with your calendar.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "minimal-ui",
+  "background_color": "#f5f5f7",
+  "theme_color": "#0066cc",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
