@@ -8,7 +8,7 @@ Turn your registered Columbia Vergil courses into a calendar subscription. Manua
 
 Live app: **https://vergilcal.xsy.app** · Source: **https://github.com/linusxiong/vergil-cal-subs** · MIT License
 
-This is an independent open-source project, unaffiliated with Columbia University. The implementation is based on an authorized capture of the author's own login session and Vergil's public frontend code. **Live calendar creation, D1 management reads, ICS retrieval, and revocation were verified on Cloudflare Workers on September 21, 2026 using an authorized university account. The university's Refresh Token grant remains untested.** Automated tests use synthetic data and mocked upstream responses; successful validation does not imply university approval of third-party clients. See the [capture notes](docs/capture-2026-09-21.md) for evidence and limitations.
+This is an independent open-source project, unaffiliated with Columbia University. The implementation is based on an authorized capture of the author's own login session and Vergil's public frontend code. **Live calendar creation, D1 management reads, ICS retrieval, and revocation were verified on Cloudflare Workers on September 21, 2026 using an authorized university account. The university's Refresh Token grant remains untested.** Automated tests use synthetic data and mocked upstream responses; successful validation does not imply university approval of third-party clients. See the [English capture notes](docs/capture-2026-09-21.md) ([简体中文](docs/capture-2026-09-21.zh-CN.md)) for evidence and limitations.
 
 ## Features and stack
 
@@ -17,9 +17,9 @@ This is an independent open-source project, unaffiliated with Columbia Universit
 - New York time zone and daylight saving time, multiple meeting patterns, overnight classes, and stable ICS event UIDs.
 - Retain imported semester snapshots in one calendar; updating a term replaces only that term. Exclude dates without classes and manually update your calendar name and schedule without changing the subscription URL.
 - Private management links for viewing, updating, and revoking calendars, plus Access Token–verified account lookup for finding and updating your calendar or replacing its subscription URL; failed updates preserve the previous snapshot.
-- React + TypeScript + Vite + Bun, TanStack Router / Query, HeroUI 3 + Tailwind CSS 4.
+- React + TypeScript + Vite + Bun, TanStack Router / Query, HeroUI 3 + Tailwind CSS 4, i18next + react-i18next.
 - System fonts, restrained blue action buttons, mobile layouts, and system dark mode; no external fonts, analytics, or ads.
-- English and Simplified Chinese interfaces, with English on first visit. The language switch in the top-right corner remembers your choice on this device. Dates, instructions, notices, and course warnings follow your language; original course names and subscription content are not rewritten.
+- English and Simplified Chinese interfaces, with English on first visit. The language switch in the top-right corner remembers your choice on this device. Dates, instructions, and notices follow your language; errors and diagnostic warnings always remain English. i18next translation resources live in `src/locales/`. Original course names and subscription content are not rewritten.
 - Cloudflare Workers serves both the API and static frontend; D1 stores course snapshots. No separate persistent server, queues, or scheduled jobs.
 - English and Chinese page metadata, canonical and language alternate links, Open Graph / social cards, structured data, robots and sitemap routes, and app icons. Public page URLs use the deployed instance's own origin.
 
@@ -112,7 +112,7 @@ Tests cover registered-course filtering, DST, overnight classes, excluded dates,
 
 ## Deploy to Cloudflare Workers
 
-Use the **Deploy to Cloudflare** button above to create your own instance with a Cloudflare account. Cloudflare provisions the D1 binding and uses the repository's build and deploy scripts; deployment applies database migrations before publishing. The shared configuration is a portable template with no owner-specific account, database, or domain settings.
+Use the **Deploy to Cloudflare** button above to create your own instance with a Cloudflare account. Cloudflare provisions the D1 binding and uses the repository's build and deploy scripts; deployment applies database migrations before publishing. The root `wrangler.jsonc` is a portable template with no owner-specific account, database, or domain settings. The separate `wrangler.production.jsonc` targets the existing public instance; forks should use the root template or their own deployment configuration.
 
 For a manual deployment:
 
@@ -132,6 +132,26 @@ The deploy command builds with Vite, applies remote D1 migrations, then publishe
 You can set `vars.PUBLIC_APP_URL` in `wrangler.jsonc` to a fixed site origin, such as `https://calendar.example.com`. Once set, use the app only at that origin; writes from other origins are rejected. Without it, the app uses the current request's origin.
 
 To keep deployment settings outside the shared template, copy the configuration into the git-ignored `wrangler.deploy.json`, set your `account_id`, database ID, and optional custom-domain `routes`, then run `CLOUDFLARE_CONFIG=wrangler.deploy.json bun run deploy`. Both the build and remote migration use that configuration. An explicit account ID is needed if your Cloudflare login has access to multiple accounts.
+
+### Cloudflare Builds for the existing instance
+
+The repository includes `wrangler.production.jsonc` for `vergilcal.xsy.app`. Its account, D1 database, and domain identifiers are not secrets; it contains no deployment credentials. Forks should continue using `wrangler.jsonc` or their own deployment configuration.
+
+The Git connection is being configured; automatic deployment is not yet confirmed. Configure production builds from **`main` only**, with preview builds disabled:
+
+- **Build command:**
+
+  ```sh
+  bun run typecheck && bun test && CLOUDFLARE_CONFIG=wrangler.production.jsonc bun run build
+  ```
+
+- **Deploy command:**
+
+  ```sh
+  CLOUDFLARE_CONFIG=wrangler.production.jsonc bun run db:migrate:remote && bunx wrangler deploy
+  ```
+
+The build selects the production configuration, and deployment applies its D1 migrations before publishing the generated Worker configuration. Do not enable preview deployments for this instance.
 
 All requests run through the Worker before static assets so public HTML receives metadata for its route, while API and ICS requests do not fall back to SPA HTML. English pages are available at `/` and `/guide`; add `?lang=zh-CN` for Chinese. Canonical links and `/sitemap.xml` use your configured public origin or the request origin, so self-hosted instances do not point to someone else's domain. Private management pages and calendar/API responses are excluded from search indexing. Static-response security headers live in `public/_headers`; the Worker sets API headers. Workers observability is disabled by default, and the app does not write request logs. Avoid adding request-body or Authorization capture, third-party error tracking, or public request logs: subscription paths are themselves access credentials.
 
@@ -170,11 +190,12 @@ The API contacts only fixed Columbia hosts and rejects cross-origin redirects an
 See `src/shared.ts` for request and response types. Do not put university tokens in URLs, command-line arguments, or issues, or print complete requests when debugging.
 
 - `src/App.tsx`, `src/styles.css`: creation, management, and guide interface.
+- `src/locales/`: English and Simplified Chinese i18next resources for UI and SEO; errors and diagnostic warnings remain English.
 - `src/server/index.ts`: Worker routes, input validation, D1, and authorization.
 - `src/server/vergil.ts`: Columbia identity, token refresh, and course reads.
 - `src/server/calendar.ts`: course normalization and ICS generation.
 - `migrations/`: D1 schema; `tests/`: synthetic tests.
-- `docs/capture-2026-09-21.md`, `docs/capture-summary.json`: sanitized evidence summaries suitable for publication.
+- [English capture notes](docs/capture-2026-09-21.md), [Simplified Chinese capture notes](docs/capture-2026-09-21.zh-CN.md), and the [English machine-readable summary](docs/capture-summary.json): sanitized evidence suitable for publication. Documentation is available in both languages; code and diagnostic messages use English.
 
 ## Limitations and troubleshooting
 
@@ -187,5 +208,9 @@ See `src/shared.ts` for request and response types. Do not put university tokens
 - **Lost management link:** the original key cannot be recovered, but **Open existing calendar** verifies a fresh Access Token and opens your calendar for updates or explicit subscription URL replacement. Revoking still requires the saved management key.
 
 Opening the Vergil login page does not automatically authorize another website or mobile app to use its tokens. Browser-to-app OAuth callbacks still require university registration and permission. This project implements an explicit manual-token workflow. A formal third-party OAuth client, read-only scopes, and university-approved background refresh still require separate confirmation with CUIT.
+
+## Contributing
+
+See [Contributing](CONTRIBUTING.md) for English Conventional Commit messages, translation updates, and required checks. Run `bun run hooks:install` once to enable the local commit-message hook; `bun run commitlint` runs the commit-message checker. Update both languages in `src/locales/` when changing interface text, while keeping errors and diagnostic warnings in English.
 
 Development references: [HeroUI](https://heroui.com/en/docs/react/getting-started/quick-start), [Cloudflare Vite Plugin](https://developers.cloudflare.com/workers/vite-plugin/tutorial/), [Workers static-response headers](https://developers.cloudflare.com/workers/static-assets/headers/), [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview).

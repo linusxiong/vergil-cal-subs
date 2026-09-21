@@ -8,7 +8,7 @@
 
 在线使用：**https://vergilcal.xsy.app** · 源代码：**https://github.com/linusxiong/vergil-cal-subs** · MIT License
 
-这是独立开源项目，与 Columbia University 无隶属关系。当前实现依据一次本人授权的登录抓包及 Vergil 公开前端代码；**2026 年 9 月 21 日已用本人授权账号在 Cloudflare Workers 上验证真实课程读取、日历创建、D1 管理读取、ICS 获取与撤销；学校的 Refresh Token grant 仍未实测**。自动测试使用合成数据和模拟上游响应，验证成功不代表学校批准了第三方客户端。证据与限制见 [抓包归档](docs/capture-2026-09-21.md)。
+这是独立开源项目，与 Columbia University 无隶属关系。当前实现依据一次本人授权的登录抓包及 Vergil 公开前端代码；**2026 年 9 月 21 日已用本人授权账号在 Cloudflare Workers 上验证真实课程读取、日历创建、D1 管理读取、ICS 获取与撤销；学校的 Refresh Token grant 仍未实测**。自动测试使用合成数据和模拟上游响应，验证成功不代表学校批准了第三方客户端。证据与限制见 [中文抓包归档](docs/capture-2026-09-21.zh-CN.md)（[English](docs/capture-2026-09-21.md)）。
 
 ## 功能与技术栈
 
@@ -17,9 +17,9 @@
 - 按纽约时区处理夏令时、多个上课安排及跨午夜课程，生成具有稳定 UID 的 ICS 事件。
 - 同一日历保留已导入的各学期快照，更新某个学期只替换该学期；支持排除停课日期，手动更新名称和课表时订阅地址不变。
 - 私密管理链接用于查看、更新及撤销；也可通过 Access Token 验证账号后查找和更新自己的日历，或更换订阅地址；一次更新失败保留原快照。
-- React + TypeScript + Vite + Bun，TanStack Router / Query，HeroUI 3 + Tailwind CSS 4。
+- React + TypeScript + Vite + Bun，TanStack Router / Query，HeroUI 3 + Tailwind CSS 4，i18next + react-i18next。
 - 系统字体、克制的蓝色操作按钮、手机布局与系统深色模式；没有外部字体、分析脚本或广告。
-- 界面支持 English / 简体中文，首次打开默认英文；右上角切换语言并在本机记住选择。日期、操作提示、使用指南和课程警告随语言切换，课程原始名称与订阅内容不会被改写。
+- 界面支持 English / 简体中文，首次打开默认英文；右上角切换语言并在本机记住选择。日期、操作提示和使用指南随语言切换，错误与诊断警告始终使用英文。i18next 翻译资源位于 `src/locales/`，课程原始名称与订阅内容不会被改写。
 - Cloudflare Workers 同时托管 API 和静态前端，D1 保存课程快照。无独立常驻服务器、队列或定时任务。
 - 中英文页面元数据、canonical 与语言替代链接、Open Graph／社交分享卡片、结构化数据、robots 与 sitemap 路由，以及应用图标。公开页面地址使用部署实例自己的 origin。
 
@@ -112,7 +112,7 @@ bun run preview    # 构建后在本地预览生产版本
 
 ## 部署到 Cloudflare Workers
 
-使用上方 **Deploy to Cloudflare** 按钮和自己的 Cloudflare 账号即可创建实例。Cloudflare 会配置 D1 绑定，并使用仓库的构建与部署脚本；发布前自动应用数据库迁移。共享配置是可复用模板，不包含项目维护者专属的账号、数据库或域名设置。
+使用上方 **Deploy to Cloudflare** 按钮和自己的 Cloudflare 账号即可创建实例。Cloudflare 会配置 D1 绑定，并使用仓库的构建与部署脚本；发布前自动应用数据库迁移。根目录 `wrangler.jsonc` 是可复用模板，不包含项目维护者专属的账号、数据库或域名设置。独立的 `wrangler.production.jsonc` 用于现有公开实例；fork 请使用根模板或自己的部署配置。
 
 手动部署步骤如下：
 
@@ -132,6 +132,26 @@ bun run deploy
 可在 `wrangler.jsonc` 添加 `vars.PUBLIC_APP_URL` 作为固定站点 origin，例如 `https://calendar.example.com`。配置后应只通过该 origin 使用应用，其他 origin 的写入会被拒绝。未设置时使用当前请求的 origin。
 
 如需保留共享模板，可将配置复制到已被 Git 忽略的 `wrangler.deploy.json`，填写自己的 `account_id`、数据库 ID 和可选的自定义域名 `routes`，然后运行 `CLOUDFLARE_CONFIG=wrangler.deploy.json bun run deploy`。构建和远程迁移都会使用此配置。若 Cloudflare 登录账号可访问多个账户，需要明确指定 account ID。
+
+### 现有实例的 Cloudflare Builds
+
+仓库中的 `wrangler.production.jsonc` 用于 `vergilcal.xsy.app`。其中的账号、D1 数据库和域名标识不是秘密，不包含部署凭据。fork 请继续使用 `wrangler.jsonc` 或自己的部署配置。
+
+Git 连接目前仍在配置中，尚未确认自动部署完成。生产构建仅连接 **`main` 分支**，关闭预览构建：
+
+- **Build command：**
+
+  ```sh
+  bun run typecheck && bun test && CLOUDFLARE_CONFIG=wrangler.production.jsonc bun run build
+  ```
+
+- **Deploy command：**
+
+  ```sh
+  CLOUDFLARE_CONFIG=wrangler.production.jsonc bun run db:migrate:remote && bunx wrangler deploy
+  ```
+
+构建时选用生产配置；部署时先应用该配置对应的 D1 迁移，再发布生成的 Worker 配置。此实例不启用预览部署。
 
 所有请求都优先进入 Worker，为公开 HTML 注入对应路由的元数据，同时避免 API 和 ICS 被 SPA HTML 回退覆盖。英文页面为 `/` 和 `/guide`，添加 `?lang=zh-CN` 可访问中文版。canonical 链接和 `/sitemap.xml` 使用配置的公开 origin 或当前请求 origin，自托管实例不会指向他人的域名。私密管理页面以及日历／API 响应禁止搜索引擎索引。静态响应的安全头在 `public/_headers`；API 的头由 Worker 设置。默认关闭 Workers observability，应用不写请求日志。部署者也应避免额外开启请求体／Authorization 采集、第三方错误跟踪或公开请求日志，因为订阅路径本身是访问凭据。
 
@@ -170,11 +190,12 @@ API 只请求固定 Columbia 主机，拒绝跨域重定向和跨学生分页。
 请求与响应类型见 `src/shared.ts`。不要把学校 Token 放入 URL、命令行参数或 Issue；调试时也不要打印完整请求。
 
 - `src/App.tsx`、`src/styles.css`：创建、管理、指南界面。
+- `src/locales/`：UI 与 SEO 的中英文 i18next 翻译资源；错误与诊断警告始终使用英文。
 - `src/server/index.ts`：Worker 路由、输入验证、D1 与授权。
 - `src/server/vergil.ts`：Columbia 身份、刷新和课程读取。
 - `src/server/calendar.ts`：课程归一化与 ICS 生成。
 - `migrations/`：D1 schema；`tests/`：合成测试。
-- `docs/capture-2026-09-21.md`、`docs/capture-summary.json`：可公开的脱敏证据摘要。
+- [中文抓包归档](docs/capture-2026-09-21.zh-CN.md)、[英文抓包归档](docs/capture-2026-09-21.md)和[英文机器可读摘要](docs/capture-summary.json)：可公开的脱敏证据。文档提供中英文版本，代码与诊断信息使用英文。
 
 ## 当前边界与故障排查
 
@@ -187,5 +208,9 @@ API 只请求固定 Columbia 主机，拒绝跨域重定向和跨学生分页。
 - **管理链接遗失**：原密钥无法恢复，但可用新的 Access Token “打开已有日历”，自动打开日历后更新，或主动更换订阅地址；撤销仍需要保存的管理密钥。
 
 直接打开 Vergil 登录页不会自动把令牌授权给其他网站或手机 App。系统浏览器与 App 的回调授权仍需学校注册和许可。本项目实现的是明确的手动 Token 工作流；正式第三方 OAuth 客户端、只读 scope、学校允许的后台刷新仍需另行与 CUIT 确认。
+
+## 参与贡献
+
+请参阅英文 [Contributing](CONTRIBUTING.md)，了解英文 Conventional Commits 提交规范、翻译更新与必要检查。先运行一次 `bun run hooks:install` 启用本地提交信息 hook；`bun run commitlint` 可运行提交信息检查工具。修改界面文案时同步更新 `src/locales/` 中的两种语言，错误与诊断警告保持英文。
 
 开发参考：[HeroUI](https://heroui.com/en/docs/react/getting-started/quick-start)、[Cloudflare Vite Plugin](https://developers.cloudflare.com/workers/vite-plugin/tutorial/)、[Workers 静态响应头](https://developers.cloudflare.com/workers/static-assets/headers/)、[TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview)。
