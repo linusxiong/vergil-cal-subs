@@ -34,7 +34,8 @@ export async function fetchRegisteredCourses(input: SyncRequest, expectedSubject
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), Math.min(15_000, deadline - Date.now()));
     try {
-      const response = await fetch(url, { ...init, redirect: 'error', cache: 'no-store', signal: controller.signal });
+      // workerd supports manual/follow only; reject 3xx below without forwarding credentials.
+      const response = await fetch(url, { ...init, redirect: 'manual', cache: 'no-store', signal: controller.signal });
       if (!response.ok) { await response.body?.cancel(); return { status: response.status }; }
       // Bound upstream payloads as well as the incoming credentials request.
       const reader = response.body?.getReader();
@@ -55,11 +56,13 @@ export async function fetchRegisteredCourses(input: SyncRequest, expectedSubject
     } catch (error) {
       if (error instanceof ApiFailure) throw error;
       if (controller.signal.aborted) throw new ApiFailure(504, 'UPSTREAM_TIMEOUT', 'Columbia took too long to respond. Try again.');
-      throw new ApiFailure(502, 'UPSTREAM_UNAVAILABLE', 'Could not read Columbia data. The saved calendar was not changed.');
+      throw new ApiFailure(502, 'UPSTREAM_UNAVAILABLE', `Could not read Columbia data at ${new URL(url).pathname} (${error instanceof SyntaxError ? 'invalid JSON' : 'network error'}). The saved calendar was not changed.`);
     } finally { clearTimeout(timer); }
   }
   async function get(url: string): Promise<ObjectValue> {
-    let response = await fetchJson(url, { headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' } });
+    // Columbia's JSON:API endpoints return 406 for application/json alone.
+    const accept = new URL(url).origin === OAUTH ? 'application/json' : 'application/vnd.api+json, application/json';
+    let response = await fetchJson(url, { headers: { Authorization: `Bearer ${accessToken}`, Accept: accept } });
     if (response.status === 401 && !refreshed) {
       refreshed = true;
       const token = await fetchJson(`${OAUTH}/as/token.oauth2`, {
@@ -77,10 +80,10 @@ export async function fetchRegisteredCourses(input: SyncRequest, expectedSubject
           throw new ApiFailure(401, 'COLUMBIA_AUTH', 'The Access Token and Refresh Token must belong to the same Columbia account.');
         }
       }
-      response = await fetchJson(url, { headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' } });
+      response = await fetchJson(url, { headers: { Authorization: `Bearer ${accessToken}`, Accept: accept } });
     }
     if (response.status === 401 || response.status === 403) throw new ApiFailure(401, 'COLUMBIA_AUTH', 'Columbia rejected these credentials. Paste a fresh Access Token and Refresh Token.');
-    if (!response.value) throw new ApiFailure(502, 'UPSTREAM_UNAVAILABLE', 'Could not read Columbia data. The saved calendar was not changed.');
+    if (!response.value) throw new ApiFailure(502, 'UPSTREAM_UNAVAILABLE', `Columbia returned HTTP ${response.status} at ${new URL(url).pathname}. The saved calendar was not changed.`);
     return response.value;
   }
   // Only page parameters may change; pagination cannot move credentials to another host/path or student.

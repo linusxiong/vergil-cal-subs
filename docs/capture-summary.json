@@ -1,8 +1,15 @@
 {
   "schemaVersion": 1,
   "recordedAt": "2026-09-21",
-  "windowUtc": { "start": "18:56:11", "end": "19:00:22" },
-  "counts": { "requests": 172, "responses": 168, "tokenExchangeSummaries": 1 },
+  "windowUtc": {
+    "start": "18:56:11",
+    "end": "19:00:22"
+  },
+  "counts": {
+    "requests": 172,
+    "responses": 168,
+    "tokenExchangeSummaries": 1
+  },
   "publication": "Distilled redacted metadata only; no original HAR, identifiers, tokens, personal course data, or browser profile.",
   "observedAuthorization": {
     "issuer": "https://oauth.cc.columbia.edu",
@@ -16,7 +23,11 @@
     "tokenGrantObserved": "authorization_code",
     "clientSecretObserved": false,
     "authorizationHeaderOnTokenExchangeObserved": false,
-    "tokenPresence": { "access": true, "refresh": true, "id": true },
+    "tokenPresence": {
+      "access": true,
+      "refresh": true,
+      "id": true
+    },
     "tokenType": "Bearer",
     "expiresIn": 7199,
     "scope": "auth-columbia create read update delete openid profile email https://api.columbia.edu/scope/group"
@@ -33,15 +44,39 @@
     "source": "https://vergil.columbia.edu/main.a3f63669067473db.js",
     "coursePath": "data.courses[].class_data.classes[]",
     "meetingPath": "meeting_details[].meeting_pattern.meetingpatterndetail_set[]",
-    "dateFields": ["begin_date", "end_date"],
-    "patternFields": ["week_day", "from_time", "to_time"],
-    "locationFields": ["room.room_code", "room.building.building_name", "room.room_name"]
+    "dateFields": [
+      "begin_date",
+      "end_date"
+    ],
+    "patternFields": [
+      "week_day",
+      "from_time",
+      "to_time"
+    ],
+    "locationFields": [
+      "room.room_code",
+      "room.building.building_name",
+      "room.room_name"
+    ]
   },
   "notVerified": [
     "Third-party client registration or arbitrary redirect URIs",
     "Live refresh_token grant, rotation, lifetime and MFA policy",
-    "Complete live meeting_details payload",
-    "Live end-to-end Worker synchronization",
     "School-wide holiday rules, complete street addresses, API quotas and hosting approval"
-  ]
+  ],
+  "followUpValidation": {
+    "date": "2026-09-21",
+    "runtime": "Cloudflare Workers production",
+    "verified": [
+      "Authorized live course reads and calendar creation (201)",
+      "ICS and management retrieval (200)",
+      "Temporary validation calendar revoked (204), then ICS unavailable (404)"
+    ],
+    "fixes": [
+      "Use manual redirect mode and reject redirects without forwarding credentials",
+      "Accept application/vnd.api+json on person and student-records APIs"
+    ],
+    "refreshGrantTested": false,
+    "retention": "No credentials or personal course payloads published; temporary validation calendar revoked."
+  }
 }

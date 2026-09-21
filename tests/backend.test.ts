@@ -30,8 +30,12 @@ beforeEach(() => {
     const url = new URL(String(resource));
     const headers = new Headers(init?.headers);
     calls.push({ url: url.href, headers, body: String(init?.body ?? '') });
-    expect(init?.redirect).toBe('error');
+    expect(init?.redirect).toBe('manual');
     expect(init?.cache).toBe('no-store');
+    // Mirror the live JSON:API renderer, including requests retried after refresh.
+    if (url.hostname.endsWith('.api.columbia.edu') && !headers.get('Accept')?.split(',').map(value => value.trim()).includes('application/vnd.api+json')) {
+      return new Response('', { status: 406 });
+    }
     if (url.pathname === '/as/token.oauth2') {
       refreshCount++;
       expect(new URLSearchParams(String(init?.body)).get('scope')).toBeNull();
@@ -128,6 +132,22 @@ test('pagination cannot send bearer credentials to a different host', async () =
   }) as unknown as typeof fetch;
   await expect(fetchRegisteredCourses(input)).rejects.toMatchObject({ code: 'UPSTREAM_DATA' });
   expect(calls.every((call) => !call.url.includes('attacker'))).toBe(true);
+});
+
+test('upstream redirects are rejected without forwarding credentials or saving a calendar', async () => {
+  let attempts = 0;
+  globalThis.fetch = mock(async (_resource: RequestInfo | URL, init?: RequestInit) => {
+    attempts++;
+    expect(init?.redirect).toBe('manual');
+    return new Response(null, { status: 302, headers: { Location: 'https://attacker.example/private' } });
+  }) as unknown as typeof fetch;
+  const response = await worker.fetch(request(), env);
+  expect(response.status).toBe(502);
+  const body = await response.text();
+  expect(body).toContain('HTTP 302');
+  for (const value of [input.accessToken, input.refreshToken, 'attacker.example']) expect(body).not.toContain(value);
+  expect(attempts).toBe(1);
+  expect(stored()).toBe('[]');
 });
 
 test('a racing update rejects the stale sync without overwriting its stored snapshot', async () => {

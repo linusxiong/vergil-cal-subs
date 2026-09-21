@@ -8,7 +8,7 @@ Turn your registered Columbia Vergil courses into a calendar subscription. Manua
 
 Live app: **https://vergilcal.xsy.app** · Source: **https://github.com/linusxiong/vergil-cal-subs** · MIT License
 
-This is an independent open-source project, unaffiliated with Columbia University. The implementation is based on an authorized capture of the author's own login session and Vergil's public frontend code. **This Worker has not yet been validated end to end with real university tokens, and the university's Refresh Token grant has not been tested.** Local tests use synthetic data and mocked upstream responses; they do not imply university approval of third-party clients. See the [capture notes](docs/capture-2026-09-21.md) for evidence and limitations.
+This is an independent open-source project, unaffiliated with Columbia University. The implementation is based on an authorized capture of the author's own login session and Vergil's public frontend code. **Live calendar creation, D1 management reads, ICS retrieval, and revocation were verified on Cloudflare Workers on September 21, 2026 using an authorized university account. The university's Refresh Token grant remains untested.** Automated tests use synthetic data and mocked upstream responses; successful validation does not imply university approval of third-party clients. See the [capture notes](docs/capture-2026-09-21.md) for evidence and limitations.
 
 ## Features and stack
 

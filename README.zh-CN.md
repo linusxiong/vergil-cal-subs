@@ -8,7 +8,7 @@
 
 在线使用：**https://vergilcal.xsy.app** · 源代码：**https://github.com/linusxiong/vergil-cal-subs** · MIT License
 
-这是独立开源项目，与 Columbia University 无隶属关系。当前实现依据一次本人授权的登录抓包及 Vergil 公开前端代码；**尚未用真实 Token 完成此 Worker 的全链路验证，也未实测学校的 Refresh Token grant**。本地测试使用合成数据和模拟上游响应，不代表学校批准了第三方客户端。证据与限制见 [抓包归档](docs/capture-2026-09-21.md)。
+这是独立开源项目，与 Columbia University 无隶属关系。当前实现依据一次本人授权的登录抓包及 Vergil 公开前端代码；**2026 年 9 月 21 日已用本人授权账号在 Cloudflare Workers 上验证真实课程读取、日历创建、D1 管理读取、ICS 获取与撤销；学校的 Refresh Token grant 仍未实测**。自动测试使用合成数据和模拟上游响应，验证成功不代表学校批准了第三方客户端。证据与限制见 [抓包归档](docs/capture-2026-09-21.md)。
 
 ## 功能与技术栈
 
