@@ -1,0 +1,278 @@
+{
+  "errors": {
+    "verification": "Verification failed. Check your management link, or sign in to Vergil again and copy a fresh Access Token.",
+    "calendarMissing": "Calendar not found. It may have been revoked. Check your full management link.",
+    "rateLimit": "Too many requests. Please try again later.",
+    "invalidInput": "Check your term, dates, and Access Token, then try again.",
+    "courseService": "The course service is unavailable. Please try again later. Your saved calendar has not changed.",
+    "accessRequired": "Enter an Access Token. The fields have been cleared; paste it again. Refresh Token is optional.",
+    "invalidTerm": "Select a valid term, then paste your Access Token again.",
+    "invalidDates": "Use valid YYYY-MM-DD dates, one per line. Correct the dates and paste your Access Token again.",
+    "rotationUnknownSchool": "Could not confirm whether the link changed. Return home and open your calendar with a fresh Access Token to check its current link before trying again.",
+    "connection": "Connection failed. Check your network and paste your Access Token again. Your saved calendar has not changed.",
+    "clipboard": "Could not copy automatically. Select the link and copy it manually.",
+    "rotationUnknownManagement": "Could not confirm whether the link changed. Reopen your calendar to check the current link before trying again.",
+    "revocation": "Could not revoke the subscription. Your calendar is still saved. Check your network and management link, then try again.",
+    "unavailableLabel": "Calendar unavailable",
+    "unavailableTitle": "Calendar unavailable.",
+    "network": "Connection failed. Check your network and try again.",
+    "managementLink": "Check your management link and try again.",
+    "notFoundTitle": "Page not found.",
+    "notFoundDescription": "Return home to create your course calendar subscription."
+  },
+  "navigation": {
+    "skip": "Skip to main content",
+    "main": "Main navigation",
+    "create": "Create",
+    "guide": "Guide",
+    "sourceLabel": "GitHub source code (opens in a new tab)",
+    "switchLanguage": "Switch to Chinese",
+    "source": "View source"
+  },
+  "footer": {
+    "independent": "An independent, open-source project. Not affiliated with Columbia University."
+  },
+  "form": {
+    "term": "Term",
+    "termHelp": "Update this term; other semesters stay saved",
+    "calendarName": "Calendar name",
+    "namePlaceholder": "My class schedule",
+    "nameHelp": "A name you will recognize in your calendar app",
+    "connect": "Connect to Vergil",
+    "tokenGuide": "How to get tokens",
+    "accessPlaceholder": "Paste access_token",
+    "refreshPlaceholder": "Paste refresh_token",
+    "refreshHelp": "Only used to retry if your Access Token expires. Inputs clear on submission; school tokens are never saved.",
+    "skipDates": "Skip dates without classes",
+    "optionalExpand": "Optional +",
+    "excludedDates": "Excluded dates",
+    "excludedDatesHelp": "One YYYY-MM-DD date per line. Follow your course schedule; holidays are not excluded automatically.",
+    "reading": "Reading your courses…",
+    "updateSemester": "Update selected semester",
+    "createOrUpdate": "Create or update calendar",
+    "finding": "Finding your calendar…",
+    "openExisting": "Open existing calendar",
+    "lookupHelp": "One calendar per Columbia account. Use the Access Token above to open yours without changing any courses.",
+    "storageNotice": "Only your course snapshot is saved. School credentials are never stored.",
+    "accessLabel": "Access Token",
+    "refreshLabel": "Refresh Token"
+  },
+  "common": {
+    "optional": "(optional)",
+    "cancel": "Cancel",
+    "home": "Back to home",
+    "copy": "Copy",
+    "listSeparator": ", ",
+    "rangeSeparator": "to",
+    "guide": "Read the guide",
+    "reload": "Reload",
+    "languageName": "English",
+    "copyLabel": "Copy {{label}}",
+    "brand": "Vergil Calendar",
+    "vergil": "Vergil",
+    "calendar": "Calendar",
+    "github": "GitHub"
+  },
+  "rotation": {
+    "confirmSchool": "The old subscription link will stop working. You must subscribe again using the new link. Your saved semesters stay unchanged. Enter a fresh Access Token above to confirm.",
+    "confirm": "Confirm link rotation",
+    "action": "Rotate subscription link",
+    "confirmManagement": "The old subscription link will stop working. You must subscribe again using the new link. Your saved semesters and management link stay unchanged."
+  },
+  "status": {
+    "linkRotated": "Subscription link replaced. Subscribe again using the new link; the old link no longer works. Your saved semesters are unchanged.",
+    "semesterUpdated": "Semester updated. Your other semesters and subscription link are unchanged; allow time for your calendar app to refresh.",
+    "calendarSaved": "Calendar saved. Your selected semester is ready; other saved semesters remain in the same subscription.",
+    "copied": "Copied",
+    "coursesUpdated": "Courses updated. Your subscription link is unchanged; allow time for your calendar app to refresh."
+  },
+  "calendar": {
+    "eyebrow": "Your calendar",
+    "updateTitle": "Update your calendar",
+    "credentialsHelp": "Re-enter a fresh Access Token for the same Columbia account. Only the selected semester changes; previous semesters stay saved.",
+    "notFound": "No calendar found for this account. Choose a term and enter your Access Token again to create one.",
+    "updatedSummary": "Last updated {{date}} (New York time). One subscription keeps all your saved semesters. Course updates preserve its link.",
+    "managedUpdatedSummary": "Last updated {{date}} (New York time). Your subscription link stays the same."
+  },
+  "home": {
+    "eyebrow": "Your schedule, in sync with your day",
+    "title": "Your classes. In your calendar.",
+    "description": "Bring your Vergil schedule to Apple Calendar, Google Calendar, or Outlook with a subscription link.",
+    "formDescription": "One calendar for your account, with every semester you save. Choose a term and have your Vergil Access Token ready.",
+    "privacyTitle": "Your credentials, used just this once",
+    "privacyDescription": "We save the course snapshot needed for your calendar, never your school tokens. Tokens pass through this server, so only use a deployment you trust.",
+    "guideLink": "First time here? Read the guide"
+  },
+  "steps": {
+    "title": "From class schedule to calendar",
+    "credentialsTitle": "Get your tokens",
+    "credentialsDescription": "Sign in to Vergil and copy your Access Token from your browser’s developer tools.",
+    "createTitle": "Create a subscription",
+    "createDescription": "Read your registered courses and create a link for your calendar app.",
+    "subscribeTitle": "Add to your calendar",
+    "subscribeDescription": "Choose “Subscribe from URL” to see your classes alongside your day.",
+    "refreshNotice": "Courses do not sync in the background. Enter fresh tokens to update the same link; your calendar app controls how often it refreshes."
+  },
+  "links": {
+    "managementPrivacy": "This link allows updates and revocation. Keep it private.",
+    "feedPrivacy": "Anyone with this link can view your schedule. Share with care.",
+    "description": "Copy the link and choose “Subscribe to calendar” in your calendar app.",
+    "feedLabel": "Calendar subscription link",
+    "openApp": "Open in calendar app",
+    "managementLabel": "Private management link",
+    "openManagement": "Open management page"
+  },
+  "courses": {
+    "title": "Your courses",
+    "timeZone": "All times are in America/New_York",
+    "weekdays": [
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat"
+    ],
+    "count_one": "{{count}} course",
+    "count_other": "{{count}} courses",
+    "excludedDates": "Excluded dates: {{dates}}"
+  },
+  "diagnostics": {
+    "scheduleNotes": "Schedule notes",
+    "emptySemester": "No courses to display for this term. Check the selected term and your Vergil registrations.",
+    "locationPending": "Location pending",
+    "meetingsPending": "Meeting times are pending; no calendar events have been generated."
+  },
+  "manage": {
+    "removedEyebrow": "Calendar removed",
+    "revokedTitle": "Subscription revoked.",
+    "revokedDescription": "The saved course snapshot has been deleted and the old link is no longer valid. You may need to remove cached events from your calendar app.",
+    "createNew": "Create a new subscription",
+    "privateEyebrow": "Private calendar",
+    "fullLinkTitle": "Use your full management link.",
+    "fullLinkDescription": "Open the private management link saved when you created your calendar, including everything after #. A subscription link cannot manage a calendar.",
+    "loadingLabel": "Loading calendar",
+    "loading": "Loading your course calendar…",
+    "updateTitle": "Update courses",
+    "updateDescription": "Enter a fresh Access Token to update the selected semester. Other semesters stay saved. Your calendar app may take some time to refresh.",
+    "revokeTitle": "No longer need this subscription?",
+    "revokeDescription": "Revoking deletes the saved schedule and disables both links. This cannot be undone.",
+    "revokeQuestion": "Revoke this calendar subscription?",
+    "confirmRevocation": "Confirm revocation",
+    "revokeAction": "Revoke subscription"
+  },
+  "guide": {
+    "eyebrow": "A little help",
+    "title": "Make room for your schedule.",
+    "description": "Everything you need, from finding your tokens to subscribing in your calendar.",
+    "credentials": {
+      "title": "01 · Get your Vergil tokens",
+      "vergilLabel": "Vergil (opens in a new tab)",
+      "developerTools": "Open developer tools (Chrome / Edge: ⌥⌘I on Mac, or F12 on Windows).",
+      "submit": "Return to the create or manage page, paste your Access Token and any optional Refresh Token, and submit. Both fields clear on every submission, including lookup; paste the tokens you want to use again for each request.",
+      "refresh": "A Refresh Token is optional. Only after an upstream HTTP 401 can it be used for at most one refresh during the same request. If your Access Token has expired and no Refresh Token was provided, the request returns 401; get a fresh Access Token from Vergil and submit again. Tokens are not persisted, including any returned by a refresh.",
+      "protectTitle": "Protect tokens like passwords. ",
+      "protectDescription": "Do not share screenshots or export or upload HAR files. You do not need to paste any code into the Console. This service only reads your schedule, but university-issued tokens may grant broader access. Use a deployment you trust.",
+      "signIn": "Open <vergil>Vergil <external /></vergil> in a desktop browser. Sign in with your university account, complete Duo verification, and check that you can see your courses.",
+      "storage": "Choose <strong>Application → Local Storage → https://vergil.columbia.edu</strong>.",
+      "copyTokens": "Copy the complete value of <code>access_token</code> (required) and, optionally, <code>refresh_token</code> from the same session. Keep the original text without adding quotes.",
+      "network": "If the Access Token or optional Refresh Token is missing from local storage, open <strong>Network</strong> and sign in again. Find the <code>token.oauth2</code> request, then look for the required access_token and optional refresh_token fields in <strong>Response</strong>. A response value of <code>expires_in: 7199</code> means roughly two hours, so use the tokens promptly."
+    },
+    "subscribe": {
+      "title": "02 · Create and subscribe",
+      "description": "Choose your term from the dropdown, such as Fall 2026. Each verified UNI has one calendar; submitting again updates it instead of creating another. For holidays or canceled classes, enter one date per line under “Skip dates without classes.”",
+      "appleLabel": "Apple Calendar: ",
+      "apple": "Click “Open in calendar app,” or choose File → New Calendar Subscription in Calendar on Mac and paste the link.",
+      "googleLabel": "Google Calendar: ",
+      "google": "On the website, click + next to “Other calendars,” choose “From URL,” and paste the HTTPS subscription link.",
+      "outlookLabel": "Outlook: ",
+      "outlook": "Choose Add calendar → Subscribe from web and paste the HTTPS subscription link.",
+      "refreshNotice": "Subscribe to the calendar instead of importing a one-time download. Your calendar app controls refresh timing; this service cannot force an immediate update in every app."
+    },
+    "manage": {
+      "title": "03 · Save your manage link and update when needed",
+      "update": "After adding or dropping a course, or when meeting times change, open the manage link and submit a fresh Access Token and, optionally, a Refresh Token. Choose the term to import: its new snapshot replaces only that term, while previously imported semesters remain in the same calendar feed. Past terms are not fetched automatically. Ordinary updates keep your subscription URL; only explicitly replacing the URL changes it. We do not store university tokens, so there is no automatic background sync. A failed update leaves your existing snapshot intact.",
+      "lookup": "To find an existing calendar, enter a fresh Access Token and an optional Refresh Token on the homepage, then choose “Open existing calendar.” The server verifies your UNI with the university and matches its hash to your unique calendar, which opens automatically if found. Lookup alone does not change any saved courses. Both token fields clear after lookup, so enter a fresh Access Token and any optional Refresh Token again to update your calendar or replace its subscription URL. Ordinary updates preserve both links; replacing the subscription URL keeps the management link. Lookup returns zero or one normalized calendar snapshot and its imported term history, never school tokens or management keys; no plaintext UNI or school tokens are retained.",
+      "rotate": "Replacing the subscription URL requires confirmation: the old URL immediately returns 404, and you must subscribe again in your calendar app using the new URL. Authorize replacement with the saved management key or a fresh Access Token and optional Refresh Token. Saved courses, imported semesters, and the management link remain unchanged; copies already cached by calendar apps cannot be removed this way.",
+      "privacy": "Anyone with the subscription link can view your schedule. If only the subscription URL is exposed, replace it to keep your courses. Replacing the feed URL does not invalidate a leaked management key; if that key leaks, revoke the calendar using the original management link. The original management key cannot be recovered because only its hash is stored. If you lose it, “Open existing calendar” lets you find and update your calendar or replace its subscription URL with a fresh Access Token. Revocation still requires the saved management key.",
+      "save": "After creating a subscription, save your <strong>private manage link</strong> somewhere safe. It contains credentials that let you update courses or revoke the subscription. Do not share it as a regular subscription link."
+    },
+    "about": {
+      "title": "Transparent, open, and simple.",
+      "description": "This is an independent open-source tool with no affiliation to Columbia University. Course data comes from the Vergil information you authorize us to read. Follow official university and instructor announcements for meeting times and cancellations.",
+      "sourceLabel": "Source code and deployment guide on GitHub (opens in a new tab)",
+      "source": "Source code and deployment guide on GitHub"
+    },
+    "createLink": "Create a subscription"
+  },
+  "seo": {
+    "content": {
+      "guideTitle": "Columbia course calendar subscription guide",
+      "homeTitle": "Your Columbia courses, in your calendar.",
+      "privateDescription": "Open your complete private management link and enable JavaScript to manage your subscription, or use “Open existing calendar” on the homepage with a fresh Access Token to find and update it.",
+      "credentialsTitle": "1. Get your Vergil tokens",
+      "createTitle": "2. Create your subscription",
+      "createDescription": "Return to the create page, select a term, and enter your Access Token and an optional Refresh Token. Both fields clear on every submission, including lookup, so paste them again for each request. Add any holidays or canceled class dates under “Skip dates without classes,” one YYYY-MM-DD date per line. Each verified UNI has one calendar: creating again updates the existing calendar. On first creation, save the full private management link, including its # key.",
+      "subscribeTitle": "3. Add to your calendar app",
+      "apple": "Use “Open in calendar app,” or File → New Calendar Subscription on Mac.",
+      "google": "On the website, choose Other calendars → + → From URL, and paste the HTTPS subscription link.",
+      "outlook": "Choose Add calendar → Subscribe from web, and paste the HTTPS subscription link.",
+      "manageTitle": "4. Update or revoke your calendar",
+      "manageDescription": "After adding or dropping courses, open your private management link and submit a fresh Access Token and, optionally, a Refresh Token. Updating the chosen term replaces only its snapshot; previously imported terms stay in the same feed. Past university terms are not fetched automatically. Ordinary updates keep the subscription URL; only explicitly replacing it changes it. A failed update preserves the previous snapshot. To disable both links and delete the saved schedule, revoke the subscription on the management page.",
+      "introTitle": "From Vergil to Apple, Google, or Outlook",
+      "introDescription": "Sign in to Vergil, copy your Access Token and, optionally, a Refresh Token, and select your term here. The service reads your registered course schedule and creates an ICS subscription link. Subscribe from URL in your calendar app to see class dates, times, and locations.",
+      "singleCalendarTitle": "One subscription link, updated when you choose",
+      "singleCalendarDescription": "Each verified UNI has one calendar. Keep your private management link. When your courses change, submit a fresh Access Token and an optional Refresh Token to update the chosen term; other imported terms remain in the same feed. Past terms are not fetched automatically. Ordinary updates keep the subscription URL; only explicitly replacing it changes it. You can exclude holidays or canceled class dates and revoke the subscription when you no longer need it.",
+      "lookupDescription": "On the homepage, enter a fresh Access Token and an optional Refresh Token, then choose “Open existing calendar.” The server verifies your UNI with the university and matches its hash to your unique calendar. If found, it opens automatically; lookup alone changes no saved courses. Both token fields clear after lookup, so enter fresh credentials again to update or replace the subscription URL. Ordinary updates preserve both links; replacing the subscription URL keeps the management link. Lookup returns zero or one normalized snapshot and its imported term history, never school tokens or management keys. No plaintext UNI or school tokens are retained. The original management key cannot be recovered from its hash; lookup provides an alternative for finding and updating your calendar or replacing its subscription URL if you lose it, but revocation still requires the saved management key.",
+      "rotationTitle": "Replace a subscription URL",
+      "rotationDescription": "If your subscription URL is exposed or you want a new one, replace it using the private management key or a fresh Access Token and optional Refresh Token. Confirm the warning: the old feed immediately returns 404, and you must subscribe again in your calendar app with the new URL. Courses, imported semesters, and the management link remain unchanged. Replacement does not erase cached copies or invalidate a leaked management key; revocation still requires that key and deletes the calendar.",
+      "privacyTitle": "Refresh timing and privacy",
+      "privacyDescription": "Access Token is required; Refresh Token is optional and is only used for at most one refresh after an upstream HTTP 401 during the same request. An expired Access Token without a Refresh Token returns 401; obtain a fresh Access Token and submit again. This service does not persist your university tokens, including refreshed tokens, or sync courses in the background. Tokens pass through the server for each requested update, so use a deployment you trust. Your calendar app controls refresh timing; updates may not appear immediately. Anyone with the subscription link can read your schedule, and the private management link grants update and revocation access. Protect both links and your tokens.",
+      "enableJavaScript": "Enable JavaScript to create or manage a subscription.",
+      "footer": "An independent open-source project. Not affiliated with Columbia University. Follow official university and instructor announcements for schedule changes.",
+      "createLink": "Create a subscription",
+      "guideLink": "Read the full setup guide",
+      "signIn": "Sign in to {{vergilLink}} with your university account and complete Duo verification. In browser developer tools, open Application → Local Storage → https://vergil.columbia.edu. Copy the complete access_token value (required) and, optionally, refresh_token from the same session without adding quotes. If absent, sign in again with the Network panel open and inspect the token.oauth2 response."
+    },
+    "meta": {
+      "managementTitle": "Manage private calendar | Vergil Calendar",
+      "notFoundTitle": "Page not found | Vergil Calendar",
+      "guideTitle": "Columbia Calendar Subscription Guide | Vergil Calendar",
+      "homeTitle": "Columbia Vergil Course Calendar Subscription | Vergil Calendar",
+      "privateDescription": "Private calendar management and subscriptions.",
+      "guideDescription": "Learn how to get Vergil tokens, subscribe to your Columbia schedule in Apple, Google, or Outlook Calendar, and safely update or revoke your subscription.",
+      "homeDescription": "Turn your Columbia Vergil course schedule into an Apple, Google, or Outlook calendar subscription. Update courses on demand; university tokens are never stored.",
+      "imageAlt": "Vergil Calendar — Columbia course calendar subscriptions",
+      "browserRequirements": "Requires JavaScript and a modern web browser.",
+      "features": [
+        "Columbia Vergil course calendar subscriptions",
+        "Apple Calendar, Google Calendar, and Outlook support",
+        "Manual schedule updates without storing university tokens"
+      ]
+    }
+  },
+  "warnings": {
+    "schedulePending": "Schedule pending; no events generated. Sync again after Vergil is updated.",
+    "scheduleMissing": "No meeting schedule; no events generated. Please check Vergil.",
+    "datesPending": "Meeting dates or times are pending; this meeting was skipped. Sync again after Vergil is updated.",
+    "timesPending": "Meeting times are pending; this meeting was skipped. Sync again after Vergil is updated.",
+    "roomPending": "Room pending; events have no location yet. Sync again after Vergil is updated.",
+    "someTimesPending": "Some meeting times are pending; those meetings were skipped. Sync again after Vergil is updated.",
+    "withCourse": "{{course}}: {{message}}"
+  },
+  "legacyWarnings": {
+    "schedulePending": "上课安排待定，暂未生成事件；请在 Vergil 更新后重新同步。",
+    "scheduleMissing": "没有上课安排，暂未生成事件；请核对 Vergil。",
+    "datesPending": "上课日期或时间待定，已跳过该安排；请在 Vergil 更新后重新同步。",
+    "timesPending": "上课时间待定，已跳过该安排；请在 Vergil 更新后重新同步。",
+    "roomPending": "教室待定，事件暂不含地点；请在 Vergil 更新后重新同步。",
+    "someTimesPending": "部分上课时间待定，已跳过该安排；请在 Vergil 更新后重新同步。",
+    "separator": "："
+  },
+  "terms": {
+    "spring": "Spring {{year}}",
+    "summer": "Summer {{year}}",
+    "fall": "Fall {{year}}"
+  }
+}

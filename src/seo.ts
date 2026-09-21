@@ -1,4 +1,4 @@
-import type { Locale } from './locale';
+import { i18n, type Locale } from './i18n';
 
 export const noIndex = 'noindex, nofollow, noarchive';
 export const isPublicPage = (path: string) => path === '/' || path === '/guide';
@@ -8,28 +8,24 @@ export const localeUrl = (origin: string, path: string, locale: Locale) => `${or
 
 export function pageSeo(url: URL, publicOrigin = url.origin) {
   const locale: Locale = url.searchParams.get('lang') === 'zh-CN' ? 'zh-CN' : 'en';
-  const zh = locale === 'zh-CN';
+  const t = i18n.getFixedT(locale);
   const publicPage = isPublicPage(url.pathname);
   const guide = url.pathname === '/guide';
-  const title = !publicPage
-    ? (isManagementPage(url.pathname) ? (zh ? '管理私密日历' : 'Manage private calendar') : (zh ? '页面不存在' : 'Page not found')) + ' | Vergil Calendar'
-    : guide ? (zh ? 'Columbia 课程日历订阅指南 | Vergil Calendar' : 'Columbia Calendar Subscription Guide | Vergil Calendar')
-      : (zh ? 'Columbia Vergil 课程日历订阅 | Vergil Calendar' : 'Columbia Vergil Course Calendar Subscription | Vergil Calendar');
-  const description = !publicPage ? (zh ? '私密日历管理与订阅。' : 'Private calendar management and subscriptions.')
-    : guide ? (zh ? '了解如何获取 Vergil Token，将 Columbia 课表订阅到 Apple、Google 或 Outlook 日历，并安全更新或撤销订阅。' : 'Learn how to get Vergil tokens, subscribe to your Columbia schedule in Apple, Google, or Outlook Calendar, and safely update or revoke your subscription.')
-      : (zh ? '将 Columbia Vergil 课表转换为 Apple、Google 和 Outlook 日历可订阅的链接。按需更新课程，学校 Token 不会被保存。独立开源工具。' : 'Turn your Columbia Vergil course schedule into an Apple, Google, or Outlook calendar subscription. Update courses on demand; university tokens are never stored.');
+  const title = t(!publicPage ? (isManagementPage(url.pathname) ? 'seo.meta.managementTitle' : 'seo.meta.notFoundTitle') : guide ? 'seo.meta.guideTitle' : 'seo.meta.homeTitle');
+  const description = t(!publicPage ? 'seo.meta.privateDescription' : guide ? 'seo.meta.guideDescription' : 'seo.meta.homeDescription');
   return { locale, title, description, publicPage, canonical: publicPage ? localeUrl(publicOrigin, url.pathname, locale) : undefined, origin: publicOrigin, path: url.pathname };
 }
 
 export function seoHead(page: ReturnType<typeof pageSeo>) {
+  const t = i18n.getFixedT(page.locale);
   const meta = (name: string, value: string, property = false) => `<meta data-seo ${property ? 'property' : 'name'}="${name}" content="${escape(value)}">`;
   let html = `<title data-seo>${escape(page.title)}</title>${meta('description', page.description)}${meta('robots', page.publicPage ? 'index, follow, max-image-preview:large' : noIndex)}${meta('app-origin', page.origin)}`;
   if (!page.publicPage) return html;
   html += `<link data-seo rel="canonical" href="${escape(page.canonical!)}">`;
   for (const language of ['en', 'zh-CN', 'x-default']) html += `<link data-seo rel="alternate" hreflang="${language}" href="${escape(localeUrl(page.origin, page.path, language === 'zh-CN' ? 'zh-CN' : 'en'))}">`;
-  for (const [name, value] of Object.entries({ 'og:type': 'website', 'og:site_name': 'Vergil Calendar', 'og:title': page.title, 'og:description': page.description, 'og:url': page.canonical!, 'og:locale': page.locale === 'en' ? 'en_US' : 'zh_CN', 'og:locale:alternate': page.locale === 'en' ? 'zh_CN' : 'en_US', 'og:image': `${page.origin}/og-image.png`, 'og:image:width': '1200', 'og:image:height': '630', 'og:image:alt': 'Vergil Calendar — Columbia course calendar subscriptions' })) html += meta(name, value, true);
-  for (const [name, value] of Object.entries({ 'twitter:card': 'summary_large_image', 'twitter:title': page.title, 'twitter:description': page.description, 'twitter:image': `${page.origin}/og-image.png`, 'twitter:image:alt': 'Vergil Calendar — Columbia course calendar subscriptions' })) html += meta(name, value);
-  const structured = { '@context': 'https://schema.org', '@type': 'WebApplication', name: 'Vergil Calendar', url: localeUrl(page.origin, '/', page.locale), description: page.description, applicationCategory: 'EducationalApplication', operatingSystem: 'Any', browserRequirements: 'Requires JavaScript and a modern web browser.', inLanguage: page.locale, image: `${page.origin}/og-image.png`, featureList: ['Columbia Vergil course calendar subscriptions', 'Apple Calendar, Google Calendar, and Outlook support', 'Manual schedule updates without storing university tokens'], isAccessibleForFree: true };
+  for (const [name, value] of Object.entries({ 'og:type': 'website', 'og:site_name': t('common.brand'), 'og:title': page.title, 'og:description': page.description, 'og:url': page.canonical!, 'og:locale': page.locale === 'en' ? 'en_US' : 'zh_CN', 'og:locale:alternate': page.locale === 'en' ? 'zh_CN' : 'en_US', 'og:image': `${page.origin}/og-image.png`, 'og:image:width': '1200', 'og:image:height': '630', 'og:image:alt': t('seo.meta.imageAlt') })) html += meta(name, value, true);
+  for (const [name, value] of Object.entries({ 'twitter:card': 'summary_large_image', 'twitter:title': page.title, 'twitter:description': page.description, 'twitter:image': `${page.origin}/og-image.png`, 'twitter:image:alt': t('seo.meta.imageAlt') })) html += meta(name, value);
+  const structured = { '@context': 'https://schema.org', '@type': 'WebApplication', name: t('common.brand'), url: localeUrl(page.origin, '/', page.locale), description: page.description, applicationCategory: 'EducationalApplication', operatingSystem: 'Any', browserRequirements: t('seo.meta.browserRequirements'), inLanguage: page.locale, image: `${page.origin}/og-image.png`, featureList: t('seo.meta.features', { returnObjects: true }), isAccessibleForFree: true };
   html += `<script data-seo type="application/ld+json">${JSON.stringify(structured).replace(/</g, '\\u003c')}</script>`;
   return html;
 }
@@ -37,31 +33,31 @@ export function seoHead(page: ReturnType<typeof pageSeo>) {
 // Readable initial HTML for everyone, including browsers with JavaScript disabled.
 // React replaces this public introduction with the interactive application.
 export function publicContent(page: ReturnType<typeof pageSeo>) {
-  const t = (en: string, zh: string) => page.locale === 'en' ? en : zh;
+  const t = i18n.getFixedT(page.locale);
   const home = localeUrl('', '/', page.locale);
   const guide = localeUrl('', '/guide', page.locale);
   const link = (href: string, label: string) => `<a href="${escape(href)}">${escape(label)}</a>`;
-  let content = `<h1 class="mb-6 text-3xl font-semibold">${escape(!page.publicPage ? (isManagementPage(page.path) ? t('Private calendar', '私密日历') : t('Page not found.', '这个页面不存在。')) : page.path === '/guide' ? t('Columbia course calendar subscription guide', 'Columbia 课程日历订阅指南') : t('Your Columbia courses, in your calendar.', '让 Columbia 课程，融入你的日历。'))}</h1>`;
-  if (!page.publicPage && !isManagementPage(page.path)) content += `<p>${link(home, t('Back to home', '返回首页'))}</p>`;
-  else if (!page.publicPage) content += `<p>${t('Open your complete private management link and enable JavaScript to manage your subscription, or use “Open existing calendar” on the homepage with a fresh Access Token to find and update it.', '请打开完整的私密管理链接并启用 JavaScript，以管理日历订阅；也可在首页使用新的 Access Token “打开已有日历”并更新。')}</p>`;
+  let content = `<h1 class="mb-6 text-3xl font-semibold">${escape(!page.publicPage ? (isManagementPage(page.path) ? t("manage.privateEyebrow") : t("errors.notFoundTitle", { lng: 'en' })) : page.path === '/guide' ? t("seo.content.guideTitle") : t("seo.content.homeTitle"))}</h1>`;
+  if (!page.publicPage && !isManagementPage(page.path)) content += `<p>${link(home, t("common.home"))}</p>`;
+  else if (!page.publicPage) content += `<p>${t("seo.content.privateDescription")}</p>`;
   else {
     content += `<p>${escape(page.description)}</p>`;
     const sections = page.path === '/guide' ? [
-      [t('1. Get your Vergil tokens', '1. 获取 Vergil Token'), `${t('Sign in to', '登录')} ${link('https://vergil.columbia.edu', 'Vergil')}${t(' with your university account and complete Duo verification. In browser developer tools, open Application → Local Storage → https://vergil.columbia.edu. Copy the complete access_token value (required) and, optionally, refresh_token from the same session without adding quotes. If absent, sign in again with the Network panel open and inspect the token.oauth2 response.', '，完成学校账号登录和 Duo 验证。在浏览器开发者工具中打开 Application → Local Storage → https://vergil.columbia.edu，复制 access_token 的完整值（必填），也可复制同一会话的 refresh_token（可选），不要添加引号。如果找不到，可打开 Network 后重新登录，查看 token.oauth2 响应。')}`],
-      [t('2. Create your subscription', '2. 创建日历订阅'), t('Return to the create page, select a term, and enter your Access Token and an optional Refresh Token. Both fields clear on every submission, including lookup, so paste them again for each request. Add any holidays or canceled class dates under “Skip dates without classes,” one YYYY-MM-DD date per line. Each verified UNI has one calendar: creating again updates the existing calendar. On first creation, save the full private management link, including its # key.', '回到创建页面，选择学期并填写 Access Token 和可选的 Refresh Token。两个输入框会在每次提交时清空，包括查找订阅，下次请求请重新粘贴。如有假期或停课，在“跳过不上课的日期”中每行填写一个 YYYY-MM-DD 日期。每个经验证的 UNI 只有一个日历，再次创建会更新已有日历。首次创建后，私密保存完整管理链接，包括 # 密钥。')],
-      [t('3. Add to your calendar app', '3. 添加到日历 App'), `<ul><li><strong>Apple Calendar:</strong> ${t('Use “Open in calendar app,” or File → New Calendar Subscription on Mac.', '使用“在日历 App 中打开”，或在 Mac 日历中选择“文件 → 新建日历订阅”。')}</li><li><strong>Google Calendar:</strong> ${t('On the website, choose Other calendars → + → From URL, and paste the HTTPS subscription link.', '在网页端选择“其他日历 → + → 通过网址”，粘贴 HTTPS 订阅链接。')}</li><li><strong>Outlook:</strong> ${t('Choose Add calendar → Subscribe from web, and paste the HTTPS subscription link.', '选择“添加日历 → 从 Web 订阅”，粘贴 HTTPS 订阅链接。')}</li></ul>`],
-      [t('4. Update or revoke your calendar', '4. 更新或撤销日历'), t('After adding or dropping courses, open your private management link and submit a fresh Access Token and, optionally, a Refresh Token. Updating the chosen term replaces only its snapshot; previously imported terms stay in the same feed. Past university terms are not fetched automatically. Ordinary updates keep the subscription URL; only explicitly replacing it changes it. A failed update preserves the previous snapshot. To disable both links and delete the saved schedule, revoke the subscription on the management page.', '增退选后，打开私密管理链接，提交新的 Access Token 和可选的 Refresh Token。更新所选学期只替换该学期快照，已导入的其他学期保留在同一日历中；不会自动获取所有往期学期。普通更新保留订阅地址，只有主动更换地址才会改变；读取失败保留原有快照。在管理页面撤销订阅可禁用链接并删除保存的课表。')],
+      [t("seo.content.credentialsTitle"), t("seo.content.signIn", { vergilLink: link('https://vergil.columbia.edu', t('common.vergil')) })],
+      [t("seo.content.createTitle"), t("seo.content.createDescription")],
+      [t("seo.content.subscribeTitle"), `<ul><li><strong>${t("guide.subscribe.appleLabel")}</strong> ${t("seo.content.apple")}</li><li><strong>${t("guide.subscribe.googleLabel")}</strong> ${t("seo.content.google")}</li><li><strong>${t("guide.subscribe.outlookLabel")}</strong> ${t("seo.content.outlook")}</li></ul>`],
+      [t("seo.content.manageTitle"), t("seo.content.manageDescription")],
     ] : [
-      [t('From Vergil to Apple, Google, or Outlook', '从 Vergil 到 Apple、Google 或 Outlook 日历'), t('Sign in to Vergil, copy your Access Token and, optionally, a Refresh Token, and select your term here. The service reads your registered course schedule and creates an ICS subscription link. Subscribe from URL in your calendar app to see class dates, times, and locations.', '登录 Vergil，复制 Access Token 和可选的 Refresh Token，在这里选择学期。服务读取已注册课程，生成 ICS 日历订阅链接。在日历 App 中通过网址订阅，即可查看上课日期、时间和地点。')],
-      [t('One subscription link, updated when you choose', '一个订阅链接，按需更新'), t('Each verified UNI has one calendar. Keep your private management link. When your courses change, submit a fresh Access Token and an optional Refresh Token to update the chosen term; other imported terms remain in the same feed. Past terms are not fetched automatically. Ordinary updates keep the subscription URL; only explicitly replacing it changes it. You can exclude holidays or canceled class dates and revoke the subscription when you no longer need it.', '每个经验证的 UNI 只有一个日历，请保存私密管理链接。课表变更后，重新提交 Access Token 和可选的 Refresh Token，更新所选学期；已导入的其他学期保留，不会自动获取所有往期学期。普通更新保留订阅地址，只有主动更换地址才会改变。你可以排除假期或停课日期，并在不需要时撤销订阅。')],
+      [t("seo.content.introTitle"), t("seo.content.introDescription")],
+      [t("seo.content.singleCalendarTitle"), t("seo.content.singleCalendarDescription")],
     ];
-    sections.push([t('Open existing calendar', '打开已有日历'), t('On the homepage, enter a fresh Access Token and an optional Refresh Token, then choose “Open existing calendar.” The server verifies your UNI with the university and matches its hash to your unique calendar. If found, it opens automatically; lookup alone changes no saved courses. Both token fields clear after lookup, so enter fresh credentials again to update or replace the subscription URL. Ordinary updates preserve both links; replacing the subscription URL keeps the management link. Lookup returns zero or one normalized snapshot and its imported term history, never school tokens or management keys. No plaintext UNI or school tokens are retained. The original management key cannot be recovered from its hash; lookup provides an alternative for finding and updating your calendar or replacing its subscription URL if you lose it, but revocation still requires the saved management key.', '在首页输入新的 Access Token 和可选的 Refresh Token，点击“打开已有日历”。服务器向学校验证 UNI，再用其哈希匹配你唯一的日历；找到后自动打开，查找本身不会改动课程。查找后两个 Token 输入框都会清空，更新或更换订阅地址前需再次输入新的凭据。普通更新保留两种链接，更换订阅地址时管理链接不变。查找返回零个或一个归一化快照及其已导入学期历史，不返回学校 Token 或管理密钥；不保留明文 UNI 或学校 Token。原管理密钥无法从哈希恢复；遗失后可通过此入口查找和更新日历或更换订阅地址，但撤销仍需要保存的管理密钥。')]);
-    sections.push([t('Replace a subscription URL', '更换订阅地址'), t('If your subscription URL is exposed or you want a new one, replace it using the private management key or a fresh Access Token and optional Refresh Token. Confirm the warning: the old feed immediately returns 404, and you must subscribe again in your calendar app with the new URL. Courses, imported semesters, and the management link remain unchanged. Replacement does not erase cached copies or invalidate a leaked management key; revocation still requires that key and deletes the calendar.', '订阅地址泄露或需要新地址时，可使用私密管理密钥，或新的 Access Token 和可选的 Refresh Token 更换。请确认提示：旧订阅地址立即返回 404，必须在日历 App 中使用新地址重新订阅。课程、已导入学期及管理链接不变。更换地址不会删除已缓存副本，也不会使泄露的管理密钥失效；撤销仍需要该密钥，并会删除日历。')]);
-    sections.push([t('Refresh timing and privacy', '刷新时间与隐私'), t('Access Token is required; Refresh Token is optional and is only used for at most one refresh after an upstream HTTP 401 during the same request. An expired Access Token without a Refresh Token returns 401; obtain a fresh Access Token and submit again. This service does not persist your university tokens, including refreshed tokens, or sync courses in the background. Tokens pass through the server for each requested update, so use a deployment you trust. Your calendar app controls refresh timing; updates may not appear immediately. Anyone with the subscription link can read your schedule, and the private management link grants update and revocation access. Protect both links and your tokens.', 'Access Token 必填；Refresh Token 可选，仅在上游返回 HTTP 401 后用于同一次请求中最多一次刷新。Access Token 过期且未提供 Refresh Token 时返回 401，请获取新的 Access Token 后重新提交。服务不持久保存任何学校 Token（包括刷新后的 Token），也不会在后台同步课程。每次手动更新时 Token 会经过服务器，请仅使用可信部署。日历 App 决定刷新时间，更新可能不会立即显示。任何持有订阅链接的人都能查看课表，管理链接还可用于更新与撤销；请妥善保管链接和 Token。')]);
+    sections.push([t("form.openExisting"), t("seo.content.lookupDescription")]);
+    sections.push([t("seo.content.rotationTitle"), t("seo.content.rotationDescription")]);
+    sections.push([t("seo.content.privacyTitle"), t("seo.content.privacyDescription")]);
     for (const [heading, body] of sections) content += `<section class="mt-8"><h2>${heading}</h2>${body.startsWith('<ul>') ? body : `<p>${body}</p>`}</section>`;
-    content += `<p class="mt-8">${link(page.path === '/guide' ? home : guide, t(page.path === '/guide' ? 'Create a subscription' : 'Read the full setup guide', page.path === '/guide' ? '创建订阅' : '阅读完整使用指南'))}</p><p>${t('Enable JavaScript to create or manage a subscription.', '创建或管理订阅需要启用 JavaScript。')}</p>`;
+    content += `<p class="mt-8">${link(page.path === '/guide' ? home : guide, t(page.path === '/guide' ? 'seo.content.createLink' : 'seo.content.guideLink'))}</p><p>${t("seo.content.enableJavaScript")}</p>`;
   }
-  return `<div class="mx-auto max-w-3xl px-5 py-10"><nav class="mb-8 flex gap-6" aria-label="${t('Main navigation', '主导航')}">${link(home, 'Vergil Calendar')} ${link(guide, t('Guide', '使用指南'))} ${link(localeUrl('', page.path, page.locale === 'en' ? 'zh-CN' : 'en'), page.locale === 'en' ? '中文' : 'English')}</nav><main id="main" class="guide">${content}</main><footer class="mt-10 text-sm text-muted">${t('An independent open-source project. Not affiliated with Columbia University. Follow official university and instructor announcements for schedule changes.', '独立开源项目，与 Columbia University 无隶属关系。课程变更请以学校和授课教师通知为准。')}</footer></div>`;
+  return `<div class="mx-auto max-w-3xl px-5 py-10"><nav class="mb-8 flex gap-6" aria-label="${t("navigation.main")}">${link(home, t('common.brand'))} ${link(guide, t("navigation.guide"))} ${link(localeUrl('', page.path, page.locale === 'en' ? 'zh-CN' : 'en'), t('common.languageName', { lng: page.locale === 'en' ? 'zh-CN' : 'en' }))}</nav><main id="main" class="guide">${content}</main><footer class="mt-10 text-sm text-muted">${t("seo.content.footer")}</footer></div>`;
 }
 
 export function sitemap(origin: string) {

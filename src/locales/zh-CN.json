@@ -1,0 +1,278 @@
+{
+  "errors": {
+    "verification": "Verification failed. Check your management link, or sign in to Vergil again and copy a fresh Access Token.",
+    "calendarMissing": "Calendar not found. It may have been revoked. Check your full management link.",
+    "rateLimit": "Too many requests. Please try again later.",
+    "invalidInput": "Check your term, dates, and Access Token, then try again.",
+    "courseService": "The course service is unavailable. Please try again later. Your saved calendar has not changed.",
+    "accessRequired": "Enter an Access Token. The fields have been cleared; paste it again. Refresh Token is optional.",
+    "invalidTerm": "Select a valid term, then paste your Access Token again.",
+    "invalidDates": "Use valid YYYY-MM-DD dates, one per line. Correct the dates and paste your Access Token again.",
+    "rotationUnknownSchool": "Could not confirm whether the link changed. Return home and open your calendar with a fresh Access Token to check its current link before trying again.",
+    "connection": "Connection failed. Check your network and paste your Access Token again. Your saved calendar has not changed.",
+    "clipboard": "Could not copy automatically. Select the link and copy it manually.",
+    "rotationUnknownManagement": "Could not confirm whether the link changed. Reopen your calendar to check the current link before trying again.",
+    "revocation": "Could not revoke the subscription. Your calendar is still saved. Check your network and management link, then try again.",
+    "unavailableLabel": "Calendar unavailable",
+    "unavailableTitle": "Calendar unavailable.",
+    "network": "Connection failed. Check your network and try again.",
+    "managementLink": "Check your management link and try again.",
+    "notFoundTitle": "Page not found.",
+    "notFoundDescription": "Return home to create your course calendar subscription."
+  },
+  "navigation": {
+    "skip": "跳至主要内容",
+    "main": "主导航",
+    "create": "创建订阅",
+    "guide": "使用指南",
+    "sourceLabel": "GitHub 源代码（新窗口）",
+    "switchLanguage": "切换到英文",
+    "source": "查看源代码"
+  },
+  "footer": {
+    "independent": "为更从容的校园日常。独立开源项目，与 Columbia University 无隶属关系。"
+  },
+  "form": {
+    "term": "学期",
+    "termHelp": "仅更新此学期，保留其他学期",
+    "calendarName": "日历名称",
+    "namePlaceholder": "我的课程表",
+    "nameHelp": "方便在日历 App 中辨认",
+    "connect": "连接 Vergil",
+    "tokenGuide": "如何获取 Token",
+    "accessPlaceholder": "粘贴 access_token",
+    "refreshPlaceholder": "粘贴 refresh_token",
+    "refreshHelp": "仅在 Access Token 失效时用于尝试刷新。提交后立即清空输入，不保存学校 Token。",
+    "skipDates": "跳过不上课的日期",
+    "optionalExpand": "可选 ＋",
+    "excludedDates": "排除日期",
+    "excludedDatesHelp": "每行一个 YYYY-MM-DD 日期。请以自己的课程安排为准，系统不会默认排除节假日。",
+    "reading": "正在读取课程…",
+    "updateSemester": "更新所选学期",
+    "createOrUpdate": "创建或更新日历",
+    "finding": "正在查找日历…",
+    "openExisting": "打开已有日历",
+    "lookupHelp": "每个 Columbia 账号只有一个日历。使用上方的 Access Token 打开日历，不会修改课程。",
+    "storageNotice": "仅将课程快照存入日历服务，不保存学校登录凭据。",
+    "accessLabel": "Access Token",
+    "refreshLabel": "Refresh Token"
+  },
+  "common": {
+    "optional": "（可选）",
+    "cancel": "取消",
+    "home": "返回首页",
+    "copy": "复制",
+    "listSeparator": "、",
+    "rangeSeparator": "至",
+    "guide": "查看使用指南",
+    "reload": "重新加载",
+    "languageName": "中文",
+    "copyLabel": "复制 {{label}}",
+    "brand": "Vergil Calendar",
+    "vergil": "Vergil",
+    "calendar": "Calendar",
+    "github": "GitHub"
+  },
+  "rotation": {
+    "confirmSchool": "原订阅链接将立即失效，需使用新链接重新订阅。已保存的学期保持不变。请在上方重新输入有效的 Access Token 后确认。",
+    "confirm": "确认更换链接",
+    "action": "更换订阅链接",
+    "confirmManagement": "原订阅链接将立即失效，需使用新链接重新订阅。已保存的学期和管理链接保持不变。"
+  },
+  "status": {
+    "linkRotated": "订阅链接已更换。请使用新链接重新订阅，旧链接已失效。已保存的学期保持不变。",
+    "semesterUpdated": "学期已更新。其他学期与订阅链接保持不变，请等待日历 App 刷新。",
+    "calendarSaved": "日历已保存。所选学期已就绪，其他已保存学期仍保留在同一个订阅中。",
+    "copied": "已复制",
+    "coursesUpdated": "课程已更新。订阅链接保持不变，请等待日历 App 刷新。"
+  },
+  "calendar": {
+    "eyebrow": "你的日历",
+    "updateTitle": "更新日历",
+    "credentialsHelp": "请重新输入同一 Columbia 账号的有效 Access Token。仅更新所选学期，其他学期继续保留。",
+    "notFound": "此账号暂无日历。请选择学期并重新输入 Access Token 创建日历。",
+    "updatedSummary": "最后更新于 {{date}}（纽约时间）。一个订阅保留所有已保存学期；更新课程不会更换链接。",
+    "managedUpdatedSummary": "最后更新于 {{date}}（纽约时间）。更新后订阅地址保持不变。"
+  },
+  "home": {
+    "eyebrow": "让课表融入日常",
+    "title": "把课表，放进你的日历。",
+    "description": "将 Vergil 课程转换为订阅链接，在 Apple 日历、Google 日历或 Outlook 中轻松查看。",
+    "formDescription": "每个账号一个日历，保留你保存的各个学期。请选择学期，并准备好 Vergil 的 Access Token。",
+    "privacyTitle": "你的凭据，只用于这次读取",
+    "privacyDescription": "服务只保存生成日历所需的课程快照，不保存学校 Token。Token 仍会经过部署此服务的服务器，请仅使用你信任的部署。",
+    "guideLink": "第一次使用？查看完整指南"
+  },
+  "steps": {
+    "title": "从课程到日常，只需三步",
+    "credentialsTitle": "获取 Token",
+    "credentialsDescription": "登录 Vergil，在浏览器开发者工具中复制 Access Token。",
+    "createTitle": "生成订阅链接",
+    "createDescription": "读取本学期课程，生成与你的日历 App 兼容的链接。",
+    "subscribeTitle": "添加到日历",
+    "subscribeDescription": "选择“从 URL 订阅”，让课程出现在你习惯的位置。",
+    "refreshNotice": "课程不会在后台自动同步。更新需再次输入 Token；订阅地址保持不变，日历 App 按自身节奏刷新。"
+  },
+  "links": {
+    "managementPrivacy": "持有此链接的人可更新或撤销日历，请私密保存。",
+    "feedPrivacy": "持有订阅链接的人可查看课表，请谨慎分享。",
+    "description": "复制链接，在日历 App 中选择“订阅日历”。",
+    "feedLabel": "日历订阅链接",
+    "openApp": "在日历 App 中打开",
+    "managementLabel": "私密管理链接",
+    "openManagement": "打开管理页面"
+  },
+  "courses": {
+    "title": "课程概览",
+    "timeZone": "时间均为 America/New_York（纽约时间）",
+    "weekdays": [
+      "周日",
+      "周一",
+      "周二",
+      "周三",
+      "周四",
+      "周五",
+      "周六"
+    ],
+    "count_one": "{{count}} 门课程",
+    "count_other": "{{count}} 门课程",
+    "excludedDates": "已跳过的日期：{{dates}}"
+  },
+  "diagnostics": {
+    "scheduleNotes": "Schedule notes",
+    "emptySemester": "No courses to display for this term. Check the selected term and your Vergil registrations.",
+    "locationPending": "Location pending",
+    "meetingsPending": "Meeting times are pending; no calendar events have been generated."
+  },
+  "manage": {
+    "removedEyebrow": "订阅已撤销",
+    "revokedTitle": "订阅已撤销。",
+    "revokedDescription": "服务器上的课程快照已删除，原订阅链接已失效。日历 App 中缓存的事件可能仍需手动移除。",
+    "createNew": "创建新的订阅",
+    "privateEyebrow": "私密日历",
+    "fullLinkTitle": "需要完整的管理链接。",
+    "fullLinkDescription": "请打开创建日历时保存的私密管理链接，包含 # 后的管理凭据。订阅链接无法用于管理日历。",
+    "loadingLabel": "正在加载日历",
+    "loading": "正在加载课程日历…",
+    "updateTitle": "更新课程",
+    "updateDescription": "重新获取 Access Token，更新所选学期。其他学期继续保留；日历 App 的刷新可能需要一些时间。",
+    "revokeTitle": "不再需要这个订阅？",
+    "revokeDescription": "撤销会删除课程快照，使订阅与管理链接失效。此操作无法恢复。",
+    "revokeQuestion": "确定撤销这个日历订阅？",
+    "confirmRevocation": "确认撤销",
+    "revokeAction": "撤销订阅"
+  },
+  "guide": {
+    "eyebrow": "使用指南",
+    "title": "让课表，自然融入日常。",
+    "description": "从获取 Token 到添加订阅，这里是你需要的全部步骤。",
+    "credentials": {
+      "title": "01 · 获取 Vergil Token",
+      "vergilLabel": "Vergil（在新标签页打开）",
+      "developerTools": "打开浏览器开发者工具（Chrome / Edge：Mac 按 ⌥⌘I，Windows 按 F12）。",
+      "submit": "回到创建或管理页面，粘贴 Access Token 和可选的 Refresh Token 后提交。两个输入框会在每次提交时清空，包括查找订阅；下次请求请重新粘贴需要使用的 Token。",
+      "refresh": "Refresh Token 可选，仅在上游返回 HTTP 401 后用于同一次请求中最多一次刷新。如果 Access Token 已过期且未提供 Refresh Token，请求会返回 401；请从 Vergil 获取新的 Access Token 后重新提交。所有 Token 均不会持久保存，包括刷新返回的 Token。",
+      "protectTitle": "像保护密码一样保护 Token。",
+      "protectDescription": "不要分享截图、导出或上传 HAR，也不需要在 Console 粘贴任何代码。本服务只需读取课表，但学校签发的 Token 可能拥有更广权限；仅在你信任的部署上使用。",
+      "signIn": "在电脑浏览器打开 <vergil>Vergil <external /></vergil>，完成学校登录与 Duo 验证，确认能看到自己的课程。",
+      "storage": "选择 <strong>Application → Local Storage → https://vergil.columbia.edu</strong>。",
+      "copyTokens": "复制 <code>access_token</code> 的完整值（必填）；也可以复制 <code>refresh_token</code>（可选，须来自同一会话）。保留原始文本，不要添加引号。",
+      "network": "如果本地存储没有 Access Token 或可选的 Refresh Token：打开 <strong>Network</strong> 后重新登录，找到 <code>token.oauth2</code> 请求，在 <strong>Response</strong> 中查找必填的 access_token 和可选的 refresh_token。登录响应中的 <code>expires_in: 7199</code> 约为两小时；请及时使用。"
+    },
+    "subscribe": {
+      "title": "02 · 创建与订阅",
+      "description": "从下拉菜单选择学期，例如“2026 年秋季”。每个经验证的 UNI 只有一个日历，再次提交会更新已有日历，不会另建一个。如有假期或停课安排，在“跳过不上课的日期”中每行填写一个日期。",
+      "appleLabel": "Apple 日历：",
+      "apple": "点击“在日历 App 中打开”；或在 Mac 日历中选择“文件 → 新建日历订阅”，粘贴链接。",
+      "googleLabel": "Google 日历：",
+      "google": "在网页端“其他日历”旁点击 +，选择“通过网址”，粘贴 HTTPS 订阅链接。",
+      "outlookLabel": "Outlook：",
+      "outlook": "选择“添加日历 → 从 Web 订阅”，粘贴 HTTPS 订阅链接。",
+      "refreshNotice": "请选择“订阅”而非下载导入一次性文件。刷新间隔由日历 App 决定，服务无法强制所有客户端立即更新。"
+    },
+    "manage": {
+      "title": "03 · 保存管理链接，按需更新",
+      "update": "增退选或时间变更后，打开管理链接，重新获取并提交 Access Token，可选择同时提供 Refresh Token。请选择要导入的学期：新快照只替换该学期，之前导入的其他学期保留在同一日历中；不会自动获取所有往期学期。普通更新保留订阅地址，只有主动更换地址才会改变。我们不保存学校 Token，因此没有后台自动同步；一次读取失败不会覆盖已有快照。",
+      "lookup": "查找已有日历时，在首页输入新的 Access Token 和可选的 Refresh Token，点击“打开已有日历”。服务器向学校验证 UNI，再用其哈希匹配你唯一的日历；找到后自动打开，查找本身不会改动已保存的课程。查找后两个 Token 输入框都会清空，更新日历或更换订阅地址前，请再次输入新的 Access Token 和可选的 Refresh Token。普通更新保留两种链接，更换订阅地址时管理链接不变。查找返回零个或一个归一化日历快照及其已导入学期历史，不返回学校 Token 或管理密钥；不保留明文 UNI 或学校 Token。",
+      "rotate": "更换订阅地址前需要确认：旧地址立即返回 404，必须在日历 App 中使用新地址重新订阅。可使用保存的管理密钥，或新的 Access Token 和可选的 Refresh Token 授权更换。已保存的课程、历史学期和管理链接不变；此操作无法删除日历 App 已缓存的副本。",
+      "privacy": "订阅链接本身也具有访问权限：任何持有它的人都能查看课表。如果只有订阅地址泄露，可更换地址并保留课程。更换订阅地址不会使泄露的管理密钥失效；若管理密钥泄露，请使用原管理链接撤销日历。原管理密钥仅保存哈希，无法恢复原文。遗失后可通过“打开已有日历”，使用新的 Access Token 查找和更新日历或更换订阅地址；撤销仍需要保存的管理密钥。",
+      "save": "创建后请私密保存<strong>管理链接</strong>。它包含管理凭据，可用于更新课程或撤销订阅；不要把它当作普通订阅链接分享。"
+    },
+    "about": {
+      "title": "透明、开放，保持简单。",
+      "description": "这是一个独立开源工具，与 Columbia University 无隶属关系。课程数据来自你授权读取的 Vergil 信息；时间与停课安排请以学校和授课教师通知为准。",
+      "sourceLabel": "查看 GitHub 源代码与部署说明（在新标签页打开）",
+      "source": "查看 GitHub 源代码与部署说明"
+    },
+    "createLink": "开始创建订阅"
+  },
+  "seo": {
+    "content": {
+      "guideTitle": "Columbia 课程日历订阅指南",
+      "homeTitle": "让 Columbia 课程，融入你的日历。",
+      "privateDescription": "请打开完整的私密管理链接并启用 JavaScript，以管理日历订阅；也可在首页使用新的 Access Token “打开已有日历”并更新。",
+      "credentialsTitle": "1. 获取 Vergil Token",
+      "createTitle": "2. 创建日历订阅",
+      "createDescription": "回到创建页面，选择学期并填写 Access Token 和可选的 Refresh Token。两个输入框会在每次提交时清空，包括查找订阅，下次请求请重新粘贴。如有假期或停课，在“跳过不上课的日期”中每行填写一个 YYYY-MM-DD 日期。每个经验证的 UNI 只有一个日历，再次创建会更新已有日历。首次创建后，私密保存完整管理链接，包括 # 密钥。",
+      "subscribeTitle": "3. 添加到日历 App",
+      "apple": "使用“在日历 App 中打开”，或在 Mac 日历中选择“文件 → 新建日历订阅”。",
+      "google": "在网页端选择“其他日历 → + → 通过网址”，粘贴 HTTPS 订阅链接。",
+      "outlook": "选择“添加日历 → 从 Web 订阅”，粘贴 HTTPS 订阅链接。",
+      "manageTitle": "4. 更新或撤销日历",
+      "manageDescription": "增退选后，打开私密管理链接，提交新的 Access Token 和可选的 Refresh Token。更新所选学期只替换该学期快照，已导入的其他学期保留在同一日历中；不会自动获取所有往期学期。普通更新保留订阅地址，只有主动更换地址才会改变；读取失败保留原有快照。在管理页面撤销订阅可禁用链接并删除保存的课表。",
+      "introTitle": "从 Vergil 到 Apple、Google 或 Outlook 日历",
+      "introDescription": "登录 Vergil，复制 Access Token 和可选的 Refresh Token，在这里选择学期。服务读取已注册课程，生成 ICS 日历订阅链接。在日历 App 中通过网址订阅，即可查看上课日期、时间和地点。",
+      "singleCalendarTitle": "一个订阅链接，按需更新",
+      "singleCalendarDescription": "每个经验证的 UNI 只有一个日历，请保存私密管理链接。课表变更后，重新提交 Access Token 和可选的 Refresh Token，更新所选学期；已导入的其他学期保留，不会自动获取所有往期学期。普通更新保留订阅地址，只有主动更换地址才会改变。你可以排除假期或停课日期，并在不需要时撤销订阅。",
+      "lookupDescription": "在首页输入新的 Access Token 和可选的 Refresh Token，点击“打开已有日历”。服务器向学校验证 UNI，再用其哈希匹配你唯一的日历；找到后自动打开，查找本身不会改动课程。查找后两个 Token 输入框都会清空，更新或更换订阅地址前需再次输入新的凭据。普通更新保留两种链接，更换订阅地址时管理链接不变。查找返回零个或一个归一化快照及其已导入学期历史，不返回学校 Token 或管理密钥；不保留明文 UNI 或学校 Token。原管理密钥无法从哈希恢复；遗失后可通过此入口查找和更新日历或更换订阅地址，但撤销仍需要保存的管理密钥。",
+      "rotationTitle": "更换订阅地址",
+      "rotationDescription": "订阅地址泄露或需要新地址时，可使用私密管理密钥，或新的 Access Token 和可选的 Refresh Token 更换。请确认提示：旧订阅地址立即返回 404，必须在日历 App 中使用新地址重新订阅。课程、已导入学期及管理链接不变。更换地址不会删除已缓存副本，也不会使泄露的管理密钥失效；撤销仍需要该密钥，并会删除日历。",
+      "privacyTitle": "刷新时间与隐私",
+      "privacyDescription": "Access Token 必填；Refresh Token 可选，仅在上游返回 HTTP 401 后用于同一次请求中最多一次刷新。Access Token 过期且未提供 Refresh Token 时返回 401，请获取新的 Access Token 后重新提交。服务不持久保存任何学校 Token（包括刷新后的 Token），也不会在后台同步课程。每次手动更新时 Token 会经过服务器，请仅使用可信部署。日历 App 决定刷新时间，更新可能不会立即显示。任何持有订阅链接的人都能查看课表，管理链接还可用于更新与撤销；请妥善保管链接和 Token。",
+      "enableJavaScript": "创建或管理订阅需要启用 JavaScript。",
+      "footer": "独立开源项目，与 Columbia University 无隶属关系。课程变更请以学校和授课教师通知为准。",
+      "createLink": "创建订阅",
+      "guideLink": "阅读完整使用指南",
+      "signIn": "登录 {{vergilLink}}，完成学校账号登录和 Duo 验证。在浏览器开发者工具中打开 Application → Local Storage → https://vergil.columbia.edu，复制 access_token 的完整值（必填），也可复制同一会话的 refresh_token（可选），不要添加引号。如果找不到，可打开 Network 后重新登录，查看 token.oauth2 响应。"
+    },
+    "meta": {
+      "managementTitle": "管理私密日历 | Vergil Calendar",
+      "notFoundTitle": "Page not found | Vergil Calendar",
+      "guideTitle": "Columbia 课程日历订阅指南 | Vergil Calendar",
+      "homeTitle": "Columbia Vergil 课程日历订阅 | Vergil Calendar",
+      "privateDescription": "私密日历管理与订阅。",
+      "guideDescription": "了解如何获取 Vergil Token，将 Columbia 课表订阅到 Apple、Google 或 Outlook 日历，并安全更新或撤销订阅。",
+      "homeDescription": "将 Columbia Vergil 课表转换为 Apple、Google 和 Outlook 日历可订阅的链接。按需更新课程，学校 Token 不会被保存。独立开源工具。",
+      "imageAlt": "Vergil Calendar — Columbia 课程日历订阅",
+      "browserRequirements": "需要 JavaScript 和现代浏览器。",
+      "features": [
+        "Columbia Vergil 课程日历订阅",
+        "支持 Apple 日历、Google 日历和 Outlook",
+        "按需更新课程，不保存学校 Token"
+      ]
+    }
+  },
+  "warnings": {
+    "schedulePending": "Schedule pending; no events generated. Sync again after Vergil is updated.",
+    "scheduleMissing": "No meeting schedule; no events generated. Please check Vergil.",
+    "datesPending": "Meeting dates or times are pending; this meeting was skipped. Sync again after Vergil is updated.",
+    "timesPending": "Meeting times are pending; this meeting was skipped. Sync again after Vergil is updated.",
+    "roomPending": "Room pending; events have no location yet. Sync again after Vergil is updated.",
+    "someTimesPending": "Some meeting times are pending; those meetings were skipped. Sync again after Vergil is updated.",
+    "withCourse": "{{course}}: {{message}}"
+  },
+  "legacyWarnings": {
+    "schedulePending": "上课安排待定，暂未生成事件；请在 Vergil 更新后重新同步。",
+    "scheduleMissing": "没有上课安排，暂未生成事件；请核对 Vergil。",
+    "datesPending": "上课日期或时间待定，已跳过该安排；请在 Vergil 更新后重新同步。",
+    "timesPending": "上课时间待定，已跳过该安排；请在 Vergil 更新后重新同步。",
+    "roomPending": "教室待定，事件暂不含地点；请在 Vergil 更新后重新同步。",
+    "someTimesPending": "部分上课时间待定，已跳过该安排；请在 Vergil 更新后重新同步。",
+    "separator": "："
+  },
+  "terms": {
+    "spring": "{{year}} 年春季",
+    "summer": "{{year}} 年夏季",
+    "fall": "{{year}} 年秋季"
+  }
+}

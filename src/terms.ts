@@ -1,4 +1,4 @@
-import type { Locale } from './locale';
+import { i18n, type Locale } from './i18n';
 
 export function currentTerm(date = new Date()): string {
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en', { timeZone: 'America/New_York', year: 'numeric', month: 'numeric' }).formatToParts(date).map(part => [part.type, part.value]));
@@ -16,5 +16,5 @@ export function termOptions(selected?: string, date = new Date()): string[] {
 export function termLabel(term: string, locale: Locale): string {
   const season = Number(term.slice(-1)) - 1;
   const year = term.slice(0, 4);
-  return locale === 'en' ? `${['Spring', 'Summer', 'Fall'][season]} ${year}` : `${year} 年${['春季', '夏季', '秋季'][season]}`;
+  return i18n.t(`terms.${['spring', 'summer', 'fall'][season]}`, { lng: locale, year });
 }

@@ -1,7 +1,9 @@
 import { expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import worker, { type Env } from '../src/server';
-import { pageSeo, seoHead, sitemap } from '../src/seo';
+import en from '../src/locales/en.json';
+import zh from '../src/locales/zh-CN.json';
+import { pageSeo, publicContent, seoHead, sitemap } from '../src/seo';
 
 const shell = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const env = {
@@ -21,7 +23,7 @@ test('all public languages ship crawlable HTML, unique metadata and reciprocal a
     const html = await response.text();
     expect(html).toContain(`<html lang="${language}">`);
     expect(html).toContain('<h1');
-    expect(html).toContain(language === 'en' ? 'university tokens' : '学校 Token');
+    expect(html).toContain(language === 'en' ? en.seo.content.privacyTitle : zh.seo.content.privacyTitle);
     expect(html).toContain(`rel="canonical" href="https://fork.example${path}${suffix}"`);
     expect(html).toContain(`hreflang="en" href="https://fork.example${path}"`);
     expect(html).toContain(`hreflang="zh-CN" href="https://fork.example${path}?lang=zh-CN"`);
@@ -104,4 +106,20 @@ test('HTML shell fetches ignore client validators so metadata cannot turn into a
   expect(response.status).toBe(200);
   expect(response.headers.get('Last-Modified')).toBeNull();
   expect(await response.text()).toContain('Columbia course calendar subscription guide');
+});
+
+
+test('SSR metadata and page content remain isolated across interleaved request languages', async () => {
+  const english = pageSeo(new URL('https://fork.example/guide'));
+  const chinese = pageSeo(new URL('https://fork.example/guide?lang=zh-CN'));
+  expect(seoHead(english)).toContain(en.seo.meta.guideTitle);
+  expect(seoHead(chinese)).toContain(zh.seo.meta.guideTitle);
+  expect(publicContent(english)).toContain(en.seo.content.guideTitle);
+  expect(publicContent(chinese)).toContain(zh.seo.content.guideTitle);
+  const responses = await Promise.all(['zh-CN', 'en', 'zh-CN', 'en'].map(async lang => {
+    const response = await get(`/guide?lang=${lang}`);
+    return { lang, html: await response.text() };
+  }));
+  for (const { lang, html } of responses) expect(html).toContain(lang === 'en' ? en.seo.meta.guideTitle : zh.seo.meta.guideTitle);
+  expect(publicContent(english)).not.toContain(zh.seo.content.guideTitle);
 });

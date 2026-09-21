@@ -10,7 +10,7 @@ const zone = new Intl.DateTimeFormat('en-CA', {
 export class CalendarDataError extends Error {}
 
 function invalid(): never {
-  throw new CalendarDataError('课表数据格式异常，未更新日历。请重新同步；若仍失败，请反馈课程的日期和时间格式。');
+  throw new CalendarDataError('Invalid schedule data. The calendar was not updated. Sync again; if the problem persists, report the course date and time format.');
 }
 
 function object(value: unknown): Record<string, unknown> {
@@ -89,16 +89,16 @@ export function normalizeCourses(rawCourses: unknown[], registeredIds: Set<strin
       };
       const label = `${code}${course.section ? ` (${course.section})` : ''}`;
       if (section.meeting_details == null) {
-        warnings.add(`${label}：上课安排待定，暂未生成事件；请在 Vergil 更新后重新同步。`);
+        warnings.add(`${label}: Schedule pending; no events generated. Sync again after Vergil is updated.`);
       } else {
         const details = list(section.meeting_details, 100);
-        if (!details.length) warnings.add(`${label}：没有上课安排，暂未生成事件；请核对 Vergil。`);
+        if (!details.length) warnings.add(`${label}: No meeting schedule; no events generated. Please check Vergil.`);
         const fallbackCounts = new Map<string, number>();
         const meetingIds = new Set<string>();
         for (const rawDetail of details) {
           const detail = object(rawDetail);
           if (pending(detail.begin_date) || pending(detail.end_date) || detail.meeting_pattern == null) {
-            warnings.add(`${label}：上课日期或时间待定，已跳过该安排；请在 Vergil 更新后重新同步。`);
+            warnings.add(`${label}: Meeting dates or times are pending; this meeting was skipped. Sync again after Vergil is updated.`);
             continue;
           }
           const startDate = date(detail.begin_date);
@@ -106,9 +106,9 @@ export function normalizeCourses(rawCourses: unknown[], registeredIds: Set<strin
           if (endDate < startDate || Date.parse(endDate) - Date.parse(startDate) > 366 * DAY) invalid();
           const pattern = object(detail.meeting_pattern);
           const rows = pattern.meetingpatterndetail_set == null ? [] : list(pattern.meetingpatterndetail_set, 100);
-          if (!rows.length) warnings.add(`${label}：上课时间待定，已跳过该安排；请在 Vergil 更新后重新同步。`);
+          if (!rows.length) warnings.add(`${label}: Meeting times are pending; this meeting was skipped. Sync again after Vergil is updated.`);
           const room = location(detail.room);
-          if (!room) warnings.add(`${label}：教室待定，事件暂不含地点；请在 Vergil 更新后重新同步。`);
+          if (!room) warnings.add(`${label}: Room pending; events have no location yet. Sync again after Vergil is updated.`);
           // ponytail: identical ID-less patterns use occurrence order; upstream IDs are needed to distinguish their reordering.
           const fallback = `${startDate}/${endDate}/${rows.map(row => text(object(row).week_day, 10)).sort().join(',')}`;
           const ordinal = fallbackCounts.get(fallback) ?? 0;
@@ -118,7 +118,7 @@ export function normalizeCourses(rawCourses: unknown[], registeredIds: Set<strin
           for (const rawRow of rows) {
             const row = object(rawRow);
             if (pending(row.week_day) || pending(row.from_time) || pending(row.to_time)) {
-              warnings.add(`${label}：部分上课时间待定，已跳过该安排；请在 Vergil 更新后重新同步。`);
+              warnings.add(`${label}: Some meeting times are pending; those meetings were skipped. Sync again after Vergil is updated.`);
               continue;
             }
             const day = WEEKDAYS[text(row.week_day, 10)];
@@ -140,7 +140,7 @@ export function normalizeCourses(rawCourses: unknown[], registeredIds: Set<strin
     }
   }
   if (found.size !== registeredIds.size) {
-    throw new CalendarDataError('未能读取全部已选课程，未更新日历。请刷新 Vergil 后重试。');
+    throw new CalendarDataError('Could not read all registered courses. The calendar was not updated. Refresh Vergil and try again.');
   }
   return { courses: courses.sort((a, b) => a.id.localeCompare(b.id)), warnings: [...warnings] };
 }
@@ -156,7 +156,7 @@ function utc(localDate: string, localTime: string): number {
   const offsets = new Set([-DAY, DAY].map(delta => Date.parse(localParts(naive + delta) + 'Z') - (naive + delta)));
   // RFC 5545 selects the first occurrence of a repeated local time at the fall DST transition.
   const candidates = [...offsets].map(offset => naive - offset).filter(candidate => localParts(candidate) === target);
-  if (!candidates.length) throw new CalendarDataError('课表包含夏令时切换时不存在的纽约时间，未更新日历。请核对上课时间。');
+  if (!candidates.length) throw new CalendarDataError('The schedule includes a New York time that does not exist during the daylight saving transition. The calendar was not updated. Check the meeting time.');
   return Math.min(...candidates);
 }
 

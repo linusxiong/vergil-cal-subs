@@ -72,7 +72,7 @@ describe('normalizeCourses', () => {
     const room = raw.class_data.classes[0]!.meeting_details[0]!.room;
     Object.assign(room, { id: 0, room_name: 'Online' });
     const result = normalizeCourses([raw], new Set(['101']));
-    expect(result.warnings.join(' ')).toContain('待定');
+    expect(result.warnings.join(' ')).toContain('pending');
     expect(result.courses[0]!.meetings).toHaveLength(1);
     expect(result.courses[0]!.meetings[0]!.location).toBe('Online');
   });
