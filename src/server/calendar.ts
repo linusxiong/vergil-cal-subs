@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { CalendarSemester, Course, Meeting } from '../shared';
 
 const DAY = 86_400_000;
@@ -195,7 +196,7 @@ export function generateCalendar(input: {
   const timestamp = stamp(updatedAt);
   const excluded = new Set(list(input.excludedDates, 366).map(date));
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Vergil Calendar Subscriptions//EN',
-    'CALSCALE:GREGORIAN', `X-WR-CALNAME:${escapeText(title)}`, 'X-WR-TIMEZONE:America/New_York'];
+    'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', `X-WR-CALNAME:${escapeText(title)}`, 'X-WR-TIMEZONE:America/New_York'];
   let eventCount = 0;
   let contentLength = 0;
   const courseIds = new Set<string>();
@@ -231,12 +232,13 @@ export function generateCalendar(input: {
         const startUtc = utc(localDate, startTime);
         const endUtc = utc(endDate, endTime);
         if (endUtc <= startUtc) invalid();
-        const uid = [calendarId, courseId, meetingId, localDate].map(encodeURIComponent).join('/') + '@vergil-cal-subs';
+        // Hashed so UID lines never fold; some Android calendar parsers do not unfold continuation lines.
+        const uid = createHash('sha256').update(JSON.stringify([calendarId, courseId, meetingId, localDate])).digest('hex').slice(0, 32) + '@vergil-cal-subs';
         contentLength += uid.length + summary.length + room.length + 250;
         if (contentLength > 2_000_000) invalid();
         lines.push('BEGIN:VEVENT', `UID:${uid}`, `DTSTAMP:${timestamp}`, `LAST-MODIFIED:${timestamp}`,
           `SEQUENCE:${Math.floor(updatedAt / 1000)}`, `DTSTART:${stamp(startUtc)}`, `DTEND:${stamp(endUtc)}`,
-          `SUMMARY:${escapeText(summary)}`, `LOCATION:${escapeText(room)}`, 'END:VEVENT');
+          `SUMMARY:${escapeText(summary)}`, ...(room ? [`LOCATION:${escapeText(room)}`] : []), 'END:VEVENT');
       }
     }
   }

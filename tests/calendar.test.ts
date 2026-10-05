@@ -117,6 +117,24 @@ describe('generateCalendar', () => {
     expect(uids(calendar({ calendarId: 'different-calendar' }).ics)).not.toEqual(uids(calendar().ics));
   });
 
+  test('keeps UIDs on one unfolded line, omits empty locations and publishes', () => {
+    const changed = courses();
+    changed[0]!.meetings[0]!.id = `pattern:${'x'.repeat(1500)}`;
+    changed[0]!.meetings[0]!.location = '';
+    const result = calendar({ calendarId: 'a'.repeat(64), courses: changed });
+    const lines = result.ics.split('\r\n');
+    const ids = lines.flatMap((line, index) => line.startsWith('UID:') ? [[line, lines[index + 1]!]] : []);
+    expect(ids).toHaveLength(result.eventCount);
+    for (const [line, next] of ids) {
+      expect(line).toMatch(/^UID:[0-9a-f]{32}@vergil-cal-subs$/);
+      expect(next.startsWith(' ')).toBe(false);
+    }
+    expect(new Set(ids.map(([line]) => line)).size).toBe(result.eventCount);
+    expect(lines.filter(line => line.startsWith('LOCATION:'))).toHaveLength(9);
+    expect(result.ics).not.toContain('LOCATION:\r\n');
+    expect(result.ics).toContain('\r\nMETHOD:PUBLISH\r\n');
+  });
+
   test('cross-midnight events end on the following local day even at DST transition', () => {
     const changed = courses();
     changed[0]!.meetings = [{ ...changed[0]!.meetings[0]!, startDate: '2026-10-31', endDate: '2026-10-31', days: [6], startTime: '23:30', endTime: '02:30' }];
